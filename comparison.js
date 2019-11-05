@@ -954,14 +954,7 @@
             });
 
         };
-        if(window['NATIVE_EDITOR_ENJINE'])
-        {
-            fCallback([]);
-        }
-        else
-        {
-            AscCommon.sendImgUrls(this.originalDocument.Api, oObjectsForDownload.aUrls, fCallback, null, true);
-        }
+        AscCommon.sendImgUrls(this.originalDocument.Api, oObjectsForDownload.aUrls, fCallback, null, true);
         return null;
     };
     CDocumentComparison.prototype.setTableReviewInfoRecursive = function(oTable)
@@ -2107,7 +2100,7 @@
             AscCommon.pptx_content_loader.End_UseFullUrl();
         }
     }
-    window['AscCommonWord'].CompareBinary = CompareBinary;
-    window['AscCommonWord']["CompareBinary"] = CompareBinary;
+    window['AscCommonWord']["CompareBinary"] =  window['AscCommonWord'].CompareBinary = CompareBinary;
+    window['AscCommonWord']["ComparisonOptions"] = window['AscCommonWord'].ComparisonOptions = ComparisonOptions;
 })();
 
