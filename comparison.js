@@ -1084,13 +1084,13 @@
                         }
                         else
                         {
-                            aContentToInsert.splice(0, 0, oCurRun.Copy(false, {}));
+                            aContentToInsert.splice(0, 0, oCurRun.Copy(false, {CopyReviewPr : false}));
                         }
                         break;
                     }
                     else if(oLastText === oParentParagraph.Content[k])
                     {
-                        aContentToInsert.splice(0, 0,  oParentParagraph.Content[k].Copy(false, {}));
+                        aContentToInsert.splice(0, 0,  oParentParagraph.Content[k].Copy(false, {CopyReviewPr : false}));
                         break;
                     }
                 }
@@ -1119,13 +1119,13 @@
                         oCurRun = oParentParagraph.Content[k];
                         if(oCurRun !== oFirstRun && oCurRun !== oFirstText)
                         {
-                            aContentToInsert.splice(0, 0, oCurRun.Copy());
+                            aContentToInsert.splice(0, 0, oCurRun.Copy(false, {CopyReviewPr : false}));
                         }
                         else
                         {
                             if(oCurRun === oFirstText)
                             {
-                                aContentToInsert.splice(0, 0,  oCurRun.Copy(false, {}));
+                                aContentToInsert.splice(0, 0,  oCurRun.Copy(false, {CopyReviewPr : false}));
                             }
                             else
                             {
@@ -1484,7 +1484,7 @@
             }
             for(j = oChange.insert.length - 1; j > -1;  --j)
             {
-                oElement.Content.splice(oChange.anchor.index, 0, oChange.insert[j].element.Copy(oElement));
+                oElement.Content.splice(oChange.anchor.index, 0, oChange.insert[j].element.Copy(oElement, {CopyReviewPr : false}));
                 History.Add(new CChangesTableAddRow(oElement, oChange.anchor.index, [oElement.Content[oChange.anchor.index]]));
             }
             oElement.Internal_ReIndexing(0);
@@ -1676,14 +1676,14 @@
             var oChildElement = null;
             if(aInsert[j].element.Get_Type)
             {
-                oChildElement = aInsert[j].element.Copy(oElement, oElement.DrawingDocument, null);
+                oChildElement = aInsert[j].element.Copy(oElement, oElement.DrawingDocument,  {CopyReviewPr : false});
                 this.replaceParagraphStyle(oChildElement);
             }
             else
             {
                 if(aInsert[j].element.Parent && aInsert[j].element.Parent.Get_Type)
                 {
-                    oChildElement = aInsert[j].element.Parent.Copy(oElement, oElement.DrawingDocument, null);
+                    oChildElement = aInsert[j].element.Parent.Copy(oElement, oElement.DrawingDocument,  {CopyReviewPr : false});
                 }
             }
             if(oChildElement)
