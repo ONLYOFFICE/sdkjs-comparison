@@ -445,33 +445,27 @@
                     if(oCompareNode.hashWords && this.isComparableNodes(oCurNode, oCompareNode))
                     {
                         var dJaccard = oCurNode.hashWords.jaccard(oCompareNode.hashWords);
-
-
-
-
                         if(oCurNode.element instanceof CTable)
                         {
                             dJaccard += MIN_JACCARD;
                         }
-
                         var dIntersection = dJaccard*(oCurNode.hashWords.count + oCompareNode.hashWords.count)/(1+dJaccard);
                         if(oCurInfo.jaccard <= dJaccard)
                         {
-                            if(oCurNode.hashWords.countLetters > 0 && oCompareNode.hashWords.countLetters > 0 && dJaccard > MIN_JACCARD)
-                            {
-                                bMatchNoEmpty = true;
-                            }
                             if(oCurInfo.jaccard < dJaccard)
                             {
                                 oCurInfo.map = {};
                                 oCurInfo.minDiff = 1;
                             }
-                            oCurInfo.map[oCompareNode.element.Id] = true;
+                            oCurInfo.map[oCompareNode.element.Id] = oCompareNode;
                             oCurInfo.jaccard = dJaccard;
                             oCurInfo.intersection = dIntersection;
-                            var diffA = dJaccard*oCurNode.hashWords.count - dIntersection;
-                            var diffB = dJaccard*oCompareNode.hashWords.count - dIntersection;
-                            oCurInfo.minDiff = Math.min(oCurInfo.minDiff, Math.min(Math.abs(diffA), Math.abs(diffB)));
+                            if(dJaccard > 0)
+                            {
+                                var diffA = oCurNode.hashWords.count - dIntersection/dJaccard;
+                                var diffB = oCompareNode.hashWords.count - dIntersection/dJaccard;
+                                oCurInfo.minDiff = Math.min(oCurInfo.minDiff, Math.min(Math.abs(diffA), Math.abs(diffB)));
+                            }
                         }
                     }
                 }
@@ -483,6 +477,10 @@
                         if(oCurInfo.map.hasOwnProperty(key))
                         {
                             oCompareMap[key] = true;
+                            if(oCurNode.hashWords.countLetters > 0 && oCurInfo.map[key].hashWords.countLetters > 0)
+                            {
+                                bMatchNoEmpty = true;
+                            }
                         }
                     }
                 }
@@ -544,23 +542,20 @@
         {
             if(bOrig)
             {
-                if(!bMatchNoEmpty)
+                for(i = 0; i < aBase2.length; ++i)
                 {
-                    for(i = 0; i < aBase2.length; ++i)
+                    if(i !== aBase2[i].childidx)
                     {
-                        if(i !== aBase2[i].childidx)
-                        {
-                            aBase2.splice(i, aBase2[i].length - i);
-                            break;
-                        }
+                        aBase2.splice(i, aBase2[i].length - i);
+                        break;
                     }
-                    for(i = aCompare2.length - 1; i > -1; i--)
+                }
+                for(i = aCompare2.length - 1; i > -1; i--)
+                {
+                    if(i !== aCompare2[i].childidx)
                     {
-                        if(i !== aCompare2[i].childidx)
-                        {
-                            aCompare2.splice(0, i + 1);
-                            break;
-                        }
+                        aCompare2.splice(0, i + 1);
+                        break;
                     }
                 }
             }
@@ -602,9 +597,6 @@
 
 
         //compare tables and BlockLvlSdt
-
-
-
 
 
         //included paragraphs
