@@ -604,77 +604,57 @@
         {
             i = 0;
             j = 0;
-            aBase2.length = 0;
-            aCompare2.length = 0;
             oCompareMap = {};
-            while(i < aBase.length)
+
+            while(i < aBase.length && j < aCompare.length)
             {
                 oCurNode = aBase[i];
-                if(oCurNode.hashWords)
-                {
-                    if(oCurNode.partner)
-                    {
-                        while(j < aCompare.length)
-                        {
-                            oCompareNode = aCompare[j];
-                            if(oCompareNode.hashWords)
-                            {
-                                if(oCompareNode.partner)
-                                {
-                                    if(aBase2.length > 0 && aCompare2.length > 0)
-                                    {
-                                        if(bOrig)
-                                        {
-                                            oLCS = new LCS(aBase2, aCompare2);
-                                        }
-                                        else
-                                        {
-                                            oLCS = new LCS(aCompare2, aBase2);
-                                        }
-                                        oLCS.equals = fEquals;
-                                        oLCS.forEachCommonSymbol(fLCSCallback);
-                                    }
-                                    aCompare2.length = 0;
-                                    oCompareMap = {};
-                                    break;
-                                }
-                                else
-                                {
-                                    if(oCompareMap[oCompareNode.element.Id])
-                                    {
-                                        aCompare2.push(oCompareNode);
-                                    }
-                                }
-                            }
-                            ++j;
-                        }
-                        aBase2.length = 0;
-                    }
-                    else
-                    {
-                        oCurInfo = oEqualMap[oCurNode.element.Id];
-                        if(oCurInfo.minDiff < 0.5)
-                        {
-                            aBase2.push(oCurNode);
-                            for(key in oCurInfo.map)
-                            {
-                                if(oCurInfo.map.hasOwnProperty(key))
-                                {
-                                    oCompareMap[key] = true;
-                                }
-                            }
-                        }
-                    }
-                }
-                ++i;
-            }
-            while(j < aCompare.length)
-            {
                 oCompareNode = aCompare[j];
-                if(oCompareNode.hashWords)
+                if(oCurNode.partner && oCompareNode.partner)
                 {
-                    if(oCompareNode.partner)
+                    ++i;
+                    ++j;
+                }
+                else
+                {
+                    var nStartI = i;
+                    var nStartJ = j;
+                    var nStartComparIndex = j - 1;
+                    var nEndCompareIndex = nStartComparIndex;
+                    while(j < aCompare.length && !aCompare[j].partner)
                     {
+                        ++j;
+                    }
+                    nEndCompareIndex = j;
+                    if((nEndCompareIndex - nStartComparIndex) > 1)
+                    {
+                        oCompareMap = {};
+                        aBase2.length = 0;
+                        aCompare2.length = 0;
+                        while (i < aBase.length && !aBase[i].partner)
+                        {
+                            oCurNode = aBase[i];
+                            oCurInfo = oEqualMap[oCurNode.element.Id];
+                            if(oCurInfo.minDiff < 0.5)
+                            {
+                                for(key in oCurInfo.map)
+                                {
+                                    if(oCurInfo.map.hasOwnProperty(key))
+                                    {
+                                        oCompareNode = oCurInfo.map[key];
+                                        if(oCompareNode.childidx > nStartComparIndex
+                                            && oCompareNode.childidx < nEndCompareIndex)
+                                        {
+                                            oCompareMap[key] = true;
+                                            aBase2.push(oCurNode);
+                                            aCompare2.push(oCompareNode);
+                                        }
+                                    }
+                                }
+                            }
+                            ++i;
+                        }
+
                         if(aBase2.length > 0 && aCompare2.length > 0)
                         {
                             if(bOrig)
@@ -688,32 +668,18 @@
                             oLCS.equals = fEquals;
                             oLCS.forEachCommonSymbol(fLCSCallback);
                         }
-                        aCompare2.length = 0;
-                        oCompareMap = {};
-                        break;
                     }
-                    else
+                    i = nStartI;
+                    j = nStartJ;
+                    while(j < aCompare.length && !aCompare[j].partner)
                     {
-                        if(oCompareMap[oCompareNode.element.Id])
-                        {
-                            aCompare2.push(oCompareNode);
-                        }
+                        ++j;
+                    }
+                    while(i < aBase.length && !aBase[i].partner)
+                    {
+                        ++i;
                     }
                 }
-                ++j;
-            }
-            if(aBase2.length > 0 && aCompare2.length > 0)
-            {
-                if(bOrig)
-                {
-                    oLCS = new LCS(aBase2, aCompare2);
-                }
-                else
-                {
-                    oLCS = new LCS(aCompare2, aBase2);
-                }
-                oLCS.equals = fEquals;
-                oLCS.forEachCommonSymbol(fLCSCallback);
             }
         }
 
