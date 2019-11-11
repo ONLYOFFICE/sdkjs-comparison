@@ -722,18 +722,6 @@
         var nStart2 = (new Date()).getTime();
         console.log("TIME 2: " + (nStart2 - nStart1));
 
-        // var oDiff  = new Diff(oOrigRoot, oRevisedRoot);
-        // oDiff.equals = function(a, b)
-        // {
-        //     return a.equals(b);
-        // };
-        // var oMatching = new CMatching();
-        // oDiff.matchTrees(oMatching);
-        // var oDeltaCollector = new DeltaCollector(oMatching, oOrigRoot, oRevisedRoot);
-        // oDeltaCollector.forEachChange(function(oOperation){
-        //     oOperation.anchor.base.addChange(oOperation);
-        // });
-        // this.applyChangesToDocContent(oOrigRoot);
     };
 
     CDocumentComparison.prototype.compareContentsArrays = function(aContentOrig, aContentRev)
@@ -1027,7 +1015,7 @@
                             for(t = oCurRun.Content.length - 1; t > -1; --t)
                             {
                                 oCurRun.Paragraph = oElement.Paragraph || oElement;
-                                oNewRun = oCurRun.Copy2();
+                                oNewRun = oCurRun.Copy2({CopyReviewPr : false});
                                 oCurRun.Paragraph = oParentParagraph2;
                                 if(oLastText.elements[oLastText.elements.length - 1] === oCurRun.Content[t])
                                 {
@@ -1099,7 +1087,7 @@
                                         else
                                         {
                                             oCurRun.Paragraph = oElement.Paragraph || oElement;
-                                            oNewRun = oCurRun.Copy2();
+                                            oNewRun = oCurRun.Copy2({CopyReviewPr : false});
                                             oCurRun.Paragraph = oParentParagraph2;
                                             aContentToInsert.splice(0, 0, oNewRun);
                                         }
