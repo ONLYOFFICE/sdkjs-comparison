@@ -1,13 +1,13 @@
 {
   "sdk": {
     "min": [
-      "../api.js"
+      "api.js"
 
     ],
     "common": [
-      "../delta.js",
-      "../minhash.js",
-      "../comparison.js"
+      "delta.js",
+      "minhash.js",
+      "comparison.js"
     ]
   }
 }
