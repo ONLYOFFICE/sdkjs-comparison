@@ -87,4 +87,4 @@
         options.isNaturalDownload = true;
         this.asc_DownloadAs(options);
     };
-})(window, window.document)
+})(window, window.document);
