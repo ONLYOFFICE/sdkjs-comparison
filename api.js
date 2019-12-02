@@ -32,7 +32,8 @@
 
 
 (function(window, document) {
-    window['Asc']['Addons']['comparison'] = true; // register addon
+    window['Asc']['Addons'] = window['Asc']['Addons'] || {};
+	window['Asc']['Addons']['comparison'] = true; // register addon
     window['Asc']['asc_docs_api'].prototype["asc_CompareDocumentUrl"] = window['Asc']['asc_docs_api'].prototype.asc_CompareDocumentUrl = function (sUrl, oOptions, token) {
         this._CompareDocument({url: sUrl, format: "docx", token: token}, oOptions);
     };
