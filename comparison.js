@@ -1878,14 +1878,14 @@
                                 || oRunElement.Type === para_FootnoteReference
                                 || bPunctuation)
                             {
-                                if(bPunctuation)
+                                /*if(bPunctuation)
                                 {
                                     if(EXCLUDED_PUNCTUATION[oRunElement.Value])
                                     {
                                         bPunctuation = false;
                                     }
-                                }
-                                if(oLastText.elements.length > 0 && (!bPunctuation || (AscCommon.g_aPunctuation[oRunElement.Value] & AscCommon.PUNCTUATION_FLAG_CANT_BE_AT_END) ))
+                                }*/
+                                if(oLastText.elements.length > 0)
                                 {
                                     new CNode(oLastText, oRet);
                                     oLastText.updateHash(oHashWords);
@@ -1896,7 +1896,7 @@
                                 oLastText.setLastRun(oRun);
                                 oLastText.elements.push(oRunElement);
 
-                                if (!bPunctuation || (AscCommon.g_aPunctuation[oRunElement.Value] & AscCommon.PUNCTUATION_FLAG_CANT_BE_AT_BEGIN) )
+                                //if (!bPunctuation || (AscCommon.g_aPunctuation[oRunElement.Value] & AscCommon.PUNCTUATION_FLAG_CANT_BE_AT_BEGIN) )
                                 {
                                     oLastText.updateHash(oHashWords);
                                     new CNode(oLastText, oRet);
