@@ -35,6 +35,7 @@
 (function (undefined) {
 
     var MIN_JACCARD = 0.34;
+    var MIN_DIFF = 0.7;
     var EXCLUDED_PUNCTUATION = {};
     EXCLUDED_PUNCTUATION[46] = true;
     EXCLUDED_PUNCTUATION[95] = true;
@@ -464,7 +465,7 @@
 
                     jaccard: 0,
                     map: {},
-                    minDiff: 1,
+                    minDiff: 0,
                     intersection: 0
                 };
                 oEqualMap[oCurNode.element.Id] = oCurInfo;
@@ -484,21 +485,28 @@
                             if(oCurInfo.jaccard < dJaccard)
                             {
                                 oCurInfo.map = {};
-                                oCurInfo.minDiff = 1;
+                                oCurInfo.minDiff = 0;
                             }
                             oCurInfo.map[oCompareNode.element.Id] = oCompareNode;
                             oCurInfo.jaccard = dJaccard;
                             oCurInfo.intersection = dIntersection;
                             if(dJaccard > 0)
                             {
-                                var diffA = oCurNode.hashWords.count - dIntersection/dJaccard;
-                                var diffB = oCompareNode.hashWords.count - dIntersection/dJaccard;
-                                oCurInfo.minDiff = Math.min(oCurInfo.minDiff, Math.min(Math.abs(diffA), Math.abs(diffB)));
+                                var diffA = 0, diffB = 0;
+                                if(oCurNode.hashWords.count > 0)
+                                {
+                                    diffA = dIntersection/oCurNode.hashWords.count;
+                                }
+                                if(oCompareNode.hashWords.count > 0)
+                                {
+                                    diffB = dIntersection/oCompareNode.hashWords.count;
+                                }
+                                oCurInfo.minDiff = Math.max(oCurInfo.minDiff, Math.max(diffA, diffB));
                             }
                         }
                     }
                 }
-                if(oCurInfo.jaccard > MIN_JACCARD)
+                if(oCurInfo.jaccard > MIN_JACCARD || (oCurInfo.minDiff > MIN_DIFF && oCurNode.hashWords.countLetters > 0 ))
                 {
                     aBase2.push(oCurNode);
                     for(key in oCurInfo.map)
@@ -675,7 +683,7 @@
                         {
                             oCurNode = aBase[i];
                             oCurInfo = oEqualMap[oCurNode.element.Id];
-                            if(oCurInfo.minDiff < 0.5)
+                            if(oCurInfo.minDiff > MIN_DIFF)
                             {
                                 for(key in oCurInfo.map)
                                 {
@@ -1881,19 +1889,12 @@
                         for(j = 0; j < oRun.Content.length; ++j)
                         {
                             oRunElement = oRun.Content[j];
-                            var bPunctuation = !!(para_Text === oRunElement.Type && (AscCommon.g_aPunctuation[oRunElement.Value] || EXCLUDED_PUNCTUATION[oRunElement.Value]));
+                            var bPunctuation = para_Text === oRunElement.Type && (AscCommon.g_aPunctuation[oRunElement.Value] && !EXCLUDED_PUNCTUATION[oRunElement.Value]);
                             if(oRunElement.Type === para_Space || oRunElement.Type === para_Tab
                                 || oRunElement.Type === para_Separator || oRunElement.Type === para_NewLine
                                 || oRunElement.Type === para_FootnoteReference
                                 || bPunctuation)
                             {
-                                /*if(bPunctuation)
-                                {
-                                    if(EXCLUDED_PUNCTUATION[oRunElement.Value])
-                                    {
-                                        bPunctuation = false;
-                                    }
-                                }*/
                                 if(oLastText.elements.length > 0)
                                 {
                                     new CNode(oLastText, oRet);
@@ -1904,15 +1905,12 @@
 
                                 oLastText.setLastRun(oRun);
                                 oLastText.elements.push(oRunElement);
+                                new CNode(oLastText, oRet);
+                                oLastText.updateHash(oHashWords);
 
-                                //if (!bPunctuation || (AscCommon.g_aPunctuation[oRunElement.Value] & AscCommon.PUNCTUATION_FLAG_CANT_BE_AT_BEGIN) )
-                                {
-                                    oLastText.updateHash(oHashWords);
-                                    new CNode(oLastText, oRet);
-                                    oLastText = new CTextElement();
-                                    oLastText.setFirstRun(oRun);
-                                    oLastText.setLastRun(oRun);
-                                }
+                                oLastText = new CTextElement();
+                                oLastText.setFirstRun(oRun);
+                                oLastText.setLastRun(oRun);
                             }
                             else if(oRunElement.Type === para_Drawing)
                             {
@@ -1944,7 +1942,7 @@
                                 oLastText.setLastRun(oRun);
                                 oLastText.elements.push(oRun.Content[j]);
                                 new CNode(oLastText, oRet);
-                                //oLastText.updateHash(oHashWords);
+                                oLastText.updateHash(oHashWords);
                                 oLastText = new CTextElement();
                                 oLastText.setFirstRun(oRun);
                                 oLastText.setLastRun(oRun);
