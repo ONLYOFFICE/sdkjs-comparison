@@ -1490,7 +1490,16 @@
 
         for(var i = 0; i < oNode.children.length; ++i)
         {
-            this.applyChangesToDocContent(oNode.children[i]);
+            var oChildNode = oNode.children[i];
+            if(oChildNode.partner)
+            {
+                //TODO: Rework table comparison
+                this.compareRoots(oChildNode.element, oChildNode.partner.element);
+            }
+            else
+            {
+                this.applyChangesToDocContent(oNode.children[i]);
+            }
         }
     };
 
