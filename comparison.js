@@ -480,30 +480,34 @@
                             dJaccard += MIN_JACCARD;
                         }
                         var dIntersection = dJaccard*(oCurNode.hashWords.count + oCompareNode.hashWords.count)/(1+dJaccard);
-                        if(oCurInfo.jaccard <= dJaccard)
+                        var diffA = 0, diffB = 0, dMinDiff = 0;
+                        if(dJaccard > 0)
                         {
-                            if(oCurInfo.jaccard < dJaccard)
+                            if(oCurNode.hashWords.count > 0)
                             {
-                                oCurInfo.map = {};
-                                oCurInfo.minDiff = 0;
+                                diffA = dIntersection/oCurNode.hashWords.count;
                             }
-                            oCurInfo.map[oCompareNode.element.Id] = oCompareNode;
-                            oCurInfo.jaccard = dJaccard;
-                            oCurInfo.intersection = dIntersection;
-                            if(dJaccard > 0)
+                            if(oCompareNode.hashWords.count > 0)
                             {
-                                var diffA = 0, diffB = 0;
-                                if(oCurNode.hashWords.count > 0)
+                                diffB = dIntersection/oCompareNode.hashWords.count;
+                            }
+                            dMinDiff = Math.max(diffA, diffB);
+
+                            if(oCurInfo.jaccard <= dJaccard && dJaccard > MIN_JACCARD || (oCurInfo.jaccard <= MIN_JACCARD && dMinDiff > MIN_DIFF && oCurInfo.minDiff <= dMinDiff))
+                            {
+                                if(oCurInfo.jaccard < dJaccard && dJaccard > MIN_JACCARD)
                                 {
-                                    diffA = dIntersection/oCurNode.hashWords.count;
+                                    oCurInfo.map = {};
+                                    oCurInfo.minDiff = 0;
                                 }
-                                if(oCompareNode.hashWords.count > 0)
-                                {
-                                    diffB = dIntersection/oCompareNode.hashWords.count;
-                                }
-                                oCurInfo.minDiff = Math.max(oCurInfo.minDiff, Math.max(diffA, diffB));
+                                oCurInfo.map[oCompareNode.element.Id] = oCompareNode;
+                                oCurInfo.jaccard = dJaccard;
+                                oCurInfo.intersection = dIntersection;
+                                oCurInfo.minDiff = dMinDiff;
+
                             }
                         }
+
                     }
                 }
                 if(oCurInfo.jaccard > MIN_JACCARD || (oCurInfo.minDiff > MIN_DIFF && oCurNode.hashWords.countLetters > 0 ))
