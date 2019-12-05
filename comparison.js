@@ -38,7 +38,7 @@
     var MIN_DIFF = 0.7;
     var EXCLUDED_PUNCTUATION = {};
     EXCLUDED_PUNCTUATION[46] = true;
-    EXCLUDED_PUNCTUATION[95] = true;
+    //EXCLUDED_PUNCTUATION[95] = true;
     EXCLUDED_PUNCTUATION[160] = true;
     function CNode(oElement, oParent)
     {
