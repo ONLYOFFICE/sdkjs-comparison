@@ -40,8 +40,8 @@
     window['Asc']['asc_docs_api'].prototype["asc_CompareDocumentFile"] = window['Asc']['asc_docs_api'].prototype.asc_CompareDocumentFile = function (oOptions) {
         var t = this;
         AscCommon.ShowDocumentFileDialog(function (error, files) {
-            if (c_oAscError.ID.No !== error) {
-                t.sendEvent("asc_onError", error, c_oAscError.Level.NoCritical);
+            if (Asc.c_oAscError.ID.No !== error) {
+                t.sendEvent("asc_onError", error, Asc.c_oAscError.Level.NoCritical);
                 return;
             }
             var format = AscCommon.GetFileExtension(files[0].name);
@@ -50,7 +50,7 @@
                 t._CompareDocument({data: new Uint8Array(reader.result), format: format}, oOptions);
             };
             reader.onerror = function () {
-                t.sendEvent("asc_onError", c_oAscError.ID.Unknown, c_oAscError.Level.NoCritical);
+                t.sendEvent("asc_onError", Asc.c_oAscError.ID.Unknown, Asc.c_oAscError.Level.NoCritical);
             };
             reader.readAsArrayBuffer(files[0]);
         });
@@ -63,15 +63,15 @@
                 _api.insertDocumentUrlsData.imageMap = url;
                 if (!url['output.bin']) {
                     _api.endInsertDocumentUrls();
-                    _api.sendEvent("asc_onError", c_oAscError.ID.MailMergeLoadFile,
-                        c_oAscError.Level.NoCritical);
+                    _api.sendEvent("asc_onError", Asc.c_oAscError.ID.MailMergeLoadFile,
+                        Asc.c_oAscError.Level.NoCritical);
                     return;
                 }
                 AscCommon.loadFileContent(url['output.bin'], function (httpRequest) {
                     if (null === httpRequest || !(stream = AscCommon.initStreamFromResponse(httpRequest))) {
                         _api.endInsertDocumentUrls();
-                        _api.sendEvent("asc_onError", c_oAscError.ID.MailMergeLoadFile,
-                            c_oAscError.Level.NoCritical);
+                        _api.sendEvent("asc_onError", Asc.c_oAscError.ID.MailMergeLoadFile,
+                            Asc.c_oAscError.Level.NoCritical);
                         return;
                     }
                     _api.endInsertDocumentUrls();
