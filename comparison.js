@@ -676,7 +676,7 @@
             oLCS.forEachCommonSymbol(fLCSCallback);
         }
 
-        console.log("TIME 1: " + (nStart1 - nStart) + " Count: " + aBase.length*aCompare.length);
+      //  console.log("TIME 1: " + (nStart1 - nStart) + " Count: " + aBase.length*aCompare.length);
 
 
 
