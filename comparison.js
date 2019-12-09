@@ -34,6 +34,8 @@
 
 (function (undefined) {
 
+    var MAX_COMPARES = 1200000;
+    var MIN_JACCARD_RUDE = 0.5;
     var MIN_JACCARD = 0.34;
     var MIN_DIFF = 0.7;
     var EXCLUDED_PUNCTUATION = {};
@@ -199,6 +201,21 @@
             return this.element.compareFootnotes(oNode.element);
         }
         return null;
+    };
+
+    CNode.prototype.isComparable = function (oNode) {
+        if(this.element && oNode.element && this.element.constructor === oNode.element.constructor)
+        {
+            if(this.element instanceof CTable)
+            {
+                if(this.element.TableGrid.length !== oNode.element.TableGrid.length)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     };
 
     function CTextElement()
@@ -416,22 +433,6 @@
         }
     };
 
-    CDocumentComparison.prototype.isComparableNodes = function(oNode1, oNode2)
-    {
-        if(oNode1.element.constructor === oNode2.element.constructor)
-        {
-            if(oNode1.element instanceof CTable)
-            {
-                if(oNode1.element.TableGrid.length !== oNode2.element.TableGrid.length)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
-    };
-
     CDocumentComparison.prototype.compareRoots = function(oRoot1, oRoot2)
     {
 
@@ -451,92 +452,16 @@
             aBase = oRevisedRoot.children;
             aCompare = oOrigRoot.children;
         }
+
+        var nCompareCount = aBase.length*aCompare.length;
         var nStart = (new Date()).getTime();
         var aBase2 = [];
         var aCompare2 = [];
         var oCompareMap = {};
         var bMatchNoEmpty = false;
-        for(i = 0; i < aBase.length; ++i)
-        {
-            var oCurNode =  aBase[i];
-            if(oCurNode.hashWords)
-            {
-                var oCurInfo = {
 
-                    jaccard: 0,
-                    map: {},
-                    minDiff: 0,
-                    intersection: 0
-                };
-                oEqualMap[oCurNode.element.Id] = oCurInfo;
-                for(j = 0; j < aCompare.length; ++j)
-                {
-                    var oCompareNode = aCompare[j];
-                    if(oCompareNode.hashWords && this.isComparableNodes(oCurNode, oCompareNode))
-                    {
-                        var dJaccard = oCurNode.hashWords.jaccard(oCompareNode.hashWords);
-                        if(oCurNode.element instanceof CTable)
-                        {
-                            dJaccard += MIN_JACCARD;
-                        }
-                        var dIntersection = dJaccard*(oCurNode.hashWords.count + oCompareNode.hashWords.count)/(1+dJaccard);
-                        var diffA = 0, diffB = 0, dMinDiff = 0;
-                        if(dJaccard > 0)
-                        {
-                            if(oCurNode.hashWords.count > 0)
-                            {
-                                diffA = dIntersection/oCurNode.hashWords.count;
-                            }
-                            if(oCompareNode.hashWords.count > 0)
-                            {
-                                diffB = dIntersection/oCompareNode.hashWords.count;
-                            }
-                            dMinDiff = Math.max(diffA, diffB);
 
-                            if(oCurInfo.jaccard <= dJaccard && dJaccard > MIN_JACCARD || (oCurInfo.jaccard <= MIN_JACCARD && dMinDiff > MIN_DIFF && oCurInfo.minDiff <= dMinDiff))
-                            {
-                                if(oCurInfo.jaccard < dJaccard && dJaccard > MIN_JACCARD)
-                                {
-                                    oCurInfo.map = {};
-                                    oCurInfo.minDiff = 0;
-                                }
-                                oCurInfo.map[oCompareNode.element.Id] = oCompareNode;
-                                oCurInfo.jaccard = dJaccard;
-                                oCurInfo.intersection = dIntersection;
-                                oCurInfo.minDiff = dMinDiff;
-
-                            }
-                        }
-
-                    }
-                }
-                if(oCurInfo.jaccard > MIN_JACCARD || (oCurInfo.minDiff > MIN_DIFF && oCurNode.hashWords.countLetters > 0 ))
-                {
-                    aBase2.push(oCurNode);
-                    for(key in oCurInfo.map)
-                    {
-                        if(oCurInfo.map.hasOwnProperty(key))
-                        {
-                            oCompareMap[key] = true;
-                            if(oCurNode.hashWords.countLetters > 0 && oCurInfo.map[key].hashWords.countLetters > 0)
-                            {
-                                bMatchNoEmpty = true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        for(j = 0; j < aCompare.length; ++j)
-        {
-            oCompareNode = aCompare[j];
-            if(oCompareMap[oCompareNode.element.Id])
-            {
-                aCompare2.push(oCompareNode);
-            }
-        }
         var nStart1 = (new Date()).getTime();
-        //console.log("TIME 1: " + (nStart1 - nStart));
         var oLCS;
         var oThis = this;
         var fLCSCallback = function(x, y) {
@@ -567,85 +492,192 @@
                 }
             }
         };
-        var fEquals = function(a, b)
+        var fEquals;
+
+        if(nCompareCount <= MAX_COMPARES)
         {
-            if(oEqualMap[a.element.Id])
+            fEquals = function(a, b)
             {
-                if(oEqualMap[a.element.Id].map[b.element.Id])
+                if(oEqualMap[a.element.Id])
                 {
-                    return true;
-                }
-            }
-            else
-            {
-                if(oEqualMap[b.element.Id])
-                {
-                    if(oEqualMap[b.element.Id].map[a.element.Id])
+                    if(oEqualMap[a.element.Id].map[b.element.Id])
                     {
                         return true;
                     }
                 }
-            }
-            return false;
-        };
+                else
+                {
+                    if(oEqualMap[b.element.Id])
+                    {
+                        if(oEqualMap[b.element.Id].map[a.element.Id])
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            };
 
-
-        if(!bMatchNoEmpty)
-        {
-            if(bOrig)
+            for(i = 0; i < aBase.length; ++i)
             {
-                for(i = 0; i < aBase2.length; ++i)
+                var oCurNode =  aBase[i];
+                if(oCurNode.hashWords)
                 {
-                    if(i !== aBase2[i].childidx)
+                    var oCurInfo = {
+
+                        jaccard: 0,
+                        map: {},
+                        minDiff: 0,
+                        intersection: 0
+                    };
+                    oEqualMap[oCurNode.element.Id] = oCurInfo;
+                    for(j = 0; j < aCompare.length; ++j)
                     {
-                        aBase2.splice(i, aBase2[i].length - i);
-                        break;
+                        var oCompareNode = aCompare[j];
+                        if(oCompareNode.hashWords && oCurNode.isComparable(oCompareNode))
+                        {
+                            var dJaccard = oCurNode.hashWords.jaccard(oCompareNode.hashWords);
+                            if(oCurNode.element instanceof CTable)
+                            {
+                                dJaccard += MIN_JACCARD;
+                            }
+                            var dIntersection = dJaccard*(oCurNode.hashWords.count + oCompareNode.hashWords.count)/(1+dJaccard);
+                            var diffA = 0, diffB = 0, dMinDiff = 0;
+                            if(dJaccard > 0)
+                            {
+                                if(oCurNode.hashWords.count > 0)
+                                {
+                                    diffA = dIntersection/oCurNode.hashWords.count;
+                                }
+                                if(oCompareNode.hashWords.count > 0)
+                                {
+                                    diffB = dIntersection/oCompareNode.hashWords.count;
+                                }
+                                dMinDiff = Math.max(diffA, diffB);
+
+                                if(oCurInfo.jaccard <= dJaccard && dJaccard > MIN_JACCARD || (oCurInfo.jaccard <= MIN_JACCARD && dMinDiff > MIN_DIFF && oCurInfo.minDiff <= dMinDiff))
+                                {
+                                    if(oCurInfo.jaccard < dJaccard && dJaccard > MIN_JACCARD)
+                                    {
+                                        oCurInfo.map = {};
+                                        oCurInfo.minDiff = 0;
+                                    }
+                                    oCurInfo.map[oCompareNode.element.Id] = oCompareNode;
+                                    oCurInfo.jaccard = dJaccard;
+                                    oCurInfo.intersection = dIntersection;
+                                    oCurInfo.minDiff = dMinDiff;
+
+                                }
+                            }
+
+                        }
                     }
-                }
-                for(i = aCompare2.length - 1; i > -1; i--)
-                {
-                    if(i !== aCompare2[i].childidx)
+                    if(oCurInfo.jaccard > MIN_JACCARD || (oCurInfo.minDiff > MIN_DIFF && oCurNode.hashWords.countLetters > 0 ))
                     {
-                        aCompare2.splice(0, i + 1);
-                        break;
+                        aBase2.push(oCurNode);
+                        for(key in oCurInfo.map)
+                        {
+                            if(oCurInfo.map.hasOwnProperty(key))
+                            {
+                                oCompareMap[key] = true;
+                                if(oCurNode.hashWords.countLetters > 0 && oCurInfo.map[key].hashWords.countLetters > 0)
+                                {
+                                    bMatchNoEmpty = true;
+                                }
+                            }
+                        }
                     }
                 }
             }
-            else
+            for(j = 0; j < aCompare.length; ++j)
             {
-
-                for(i = 0; i < aCompare2.length; ++i)
+                oCompareNode = aCompare[j];
+                if(oCompareMap[oCompareNode.element.Id])
                 {
-                    if(i !== aCompare2[i].childidx)
-                    {
-                        aCompare2.splice(i, aCompare2[i].length - i);
-                        break;
-                    }
-                }
-                for(i = aBase2.length - 1; i > -1; i--)
-                {
-                    if(i !== aBase2[i].childidx)
-                    {
-                        aBase2.splice(0, i + 1);
-                        break;
-                    }
+                    aCompare2.push(oCompareNode);
                 }
             }
+            if(!bMatchNoEmpty)
+            {
+                if(bOrig)
+                {
+                    for(i = 0; i < aBase2.length; ++i)
+                    {
+                        if(i !== aBase2[i].childidx)
+                        {
+                            aBase2.splice(i, aBase2[i].length - i);
+                            break;
+                        }
+                    }
+                    for(i = aCompare2.length - 1; i > -1; i--)
+                    {
+                        if(i !== aCompare2[i].childidx)
+                        {
+                            aCompare2.splice(0, i + 1);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
 
+                    for(i = 0; i < aCompare2.length; ++i)
+                    {
+                        if(i !== aCompare2[i].childidx)
+                        {
+                            aCompare2.splice(i, aCompare2[i].length - i);
+                            break;
+                        }
+                    }
+                    for(i = aBase2.length - 1; i > -1; i--)
+                    {
+                        if(i !== aBase2[i].childidx)
+                        {
+                            aBase2.splice(0, i + 1);
+                            break;
+                        }
+                    }
+                }
+
+            }
+            if(aBase2.length > 0 && aCompare2.length > 0)
+            {
+                if(bOrig)
+                {
+                    oLCS = new LCS(aBase2, aCompare2);
+                }
+                else
+                {
+                    oLCS = new LCS(aCompare2, aBase2);
+                }
+                oLCS.equals = fEquals;
+                oLCS.forEachCommonSymbol(fLCSCallback);
+            }
         }
-        if(aBase2.length > 0 && aCompare2.length > 0)
+        else
         {
             if(bOrig)
             {
-                oLCS = new LCS(aBase2, aCompare2);
+                oLCS = new LCS(aBase, aCompare);
             }
             else
             {
-                oLCS = new LCS(aCompare2, aBase2);
+                oLCS = new LCS(aCompare, aBase);
             }
+            fEquals = function (a, b) {
+
+                if(a.hashWords && b.hashWords && a.isComparable(b))
+                {
+                    return a.hashWords.jaccard(b.hashWords) > MIN_JACCARD_RUDE;
+                }
+                return false;
+            };
             oLCS.equals = fEquals;
             oLCS.forEachCommonSymbol(fLCSCallback);
         }
+
+        console.log("TIME 1: " + (nStart1 - nStart) + " Count: " + aBase.length*aCompare.length);
+
 
 
         //compare tables and BlockLvlSdt
