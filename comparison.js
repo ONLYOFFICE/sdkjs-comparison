@@ -293,7 +293,7 @@
                 sResultString += " ";
             }
         }
-        console.log(sResultString);
+        //console.log(sResultString);
     };
     CTextElement.prototype.setFirstRun = function (oRun)
     {
@@ -536,7 +536,7 @@
             }
         }
         var nStart1 = (new Date()).getTime();
-        console.log("TIME 1: " + (nStart1 - nStart));
+        //console.log("TIME 1: " + (nStart1 - nStart));
         var oLCS;
         var oThis = this;
         var fLCSCallback = function(x, y) {
@@ -772,7 +772,7 @@
         }
 
         var nStart2 = (new Date()).getTime();
-        console.log("TIME 2: " + (nStart2 - nStart1));
+       // console.log("TIME 2: " + (nStart2 - nStart1));
 
     };
 
@@ -798,10 +798,10 @@
         var oObjectsForDownload = AscCommon.GetObjectsForImageDownload(aImages);
 
 
-        console.log("COMPARE 1");
+       // console.log("COMPARE 1");
         var oApi = oThis.originalDocument.GetApi(), i;
         var fCallback = function (data) {
-            console.log("COMPARE 2");
+           // console.log("COMPARE 2");
 
             var oImageMap = {};
             AscCommon.ResetNewUrls(data, oObjectsForDownload.aUrls, oObjectsForDownload.aBuilderImagesByUrl, oImageMap);
@@ -2035,11 +2035,9 @@
         oApi.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.SlowOperation);
         var bHaveRevisons2 = false;
         var oDoc2 = AscFormat.ExecuteNoHistory(function(){
-            var oTableId =  AscCommon.g_oTableId;
-            AscCommon.g_oTableId = new AscCommon.CTableId();
-            AscCommon.g_oTableId.init();
             AscCommon.g_oIdCounter.m_bLoad = true;
             var oBinaryFileReader, openParams        = {checkFileSize : /*this.isMobileVersion*/false, charCount : 0, parCount : 0};
+            AscCommon.g_oTableId.m_bTurnOff = false;
             var oDoc2 = new CDocument(oApi.WordControl.m_oDrawingDocument, true);
             oDoc2.Footnotes = oDoc1.Footnotes;
             oApi.WordControl.m_oDrawingDocument.m_oLogicDocument = oDoc2;
@@ -2056,7 +2054,8 @@
             {
                 oDoc2.ForceCopySectPr = false;
 
-                bHaveRevisons2 = oDoc2.HaveRevisionChanges(false);
+                oDoc2.TrackRevisionsManager.ContinueTrackRevisions();
+                bHaveRevisons2 = oDoc2.TrackRevisionsManager.Have_Changes();
                 oDoc2.Start_SilentMode();
 
                 var LogicDocuments = oDoc2.TrackRevisionsManager.Get_AllChangesLogicDocuments();
@@ -2074,8 +2073,6 @@
             AscCommon.g_oIdCounter.m_bLoad = false;
             oApi.WordControl.m_oDrawingDocument.m_oLogicDocument = oDoc1;
             oApi.WordControl.m_oLogicDocument = oDoc1;
-
-            AscCommon.g_oTableId = oTableId;
             return oDoc2;
         }, this, []);
         oDoc1.History.Document = oDoc1;
@@ -2086,23 +2083,33 @@
                 var oComp = new AscCommonWord.CDocumentComparison(oDoc1, oDoc2, oOptions ? oOptions : new ComparisonOptions());
                 oComp.compare();
             };
-            if(!window['NATIVE_EDITOR_ENJINE'] && (oDoc1.HaveRevisionChanges(false) || bHaveRevisons2))
-            {
 
-                oApi.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.SlowOperation);
-                oApi.sendEvent("asc_onAcceptChangesBeforeCompare", function (bAccept) {
-                    if(bAccept){
-                        oApi.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.SlowOperation);
-                        fCallback();
-                    }
-                    else {
-                    }
-                })
+            if(window['NATIVE_EDITOR_ENJINE'] )
+            {
+                fCallback();
             }
             else
             {
 
-                fCallback();
+                oDoc1.TrackRevisionsManager.ContinueTrackRevisions();
+                if(oDoc1.TrackRevisionsManager.Have_Changes() || bHaveRevisons2)
+                {
+
+                    oApi.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.SlowOperation);
+                    oApi.sendEvent("asc_onAcceptChangesBeforeCompare", function (bAccept) {
+                        if(bAccept){
+                            oApi.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.SlowOperation);
+                            fCallback();
+                        }
+                        else
+                        {
+                        }
+                    })
+                }
+                else
+                {
+                    fCallback();
+                }
             }
         }
         else
