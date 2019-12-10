@@ -839,6 +839,8 @@
             AscCommon.ResetNewUrls(data, oObjectsForDownload.aUrls, oObjectsForDownload.aBuilderImagesByUrl, oImageMap);
 
 
+			oThis.originalDocument.StopRecalculate();
+
             //TODO: Check locks
             History.Create_NewPoint(1);
             var oldTrackRevisions = oThis.originalDocument.IsTrackRevisions();
