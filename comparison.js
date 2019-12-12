@@ -840,9 +840,7 @@
 
 
 			oThis.originalDocument.StopRecalculate();
-
-            //TODO: Check locks
-            History.Create_NewPoint(1);
+            History.Create_NewPoint(AscDFH.historydescription_Document_CompareDocuments);
             var oldTrackRevisions = oThis.originalDocument.IsTrackRevisions();
             oThis.originalDocument.Start_SilentMode();
             oThis.originalDocument.SetTrackRevisions(false);
