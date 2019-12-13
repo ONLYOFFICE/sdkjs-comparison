@@ -419,6 +419,8 @@
         this.options = oOptions;
         this.api = oOriginalDocument.GetApi();
         this.StylesMap = {};
+        this.matchedNums = {};
+        this.reverseNumberingMap = {};
     }
     CDocumentComparison.prototype.getUserName = function()
     {
@@ -872,6 +874,14 @@
             oThis.revisedDocument.FieldsManager = oThis.originalDocument.FieldsManager;
             var NewNumbering = oThis.revisedDocument.Numbering.CopyAllNums(oThis.originalDocument.Numbering);
             oThis.revisedDocument.CopyNumberingMap = NewNumbering.NumMap;
+
+            for(var key in NewNumbering.NumMap)
+            {
+                if(NewNumbering.NumMap.hasOwnProperty(key))
+                {
+                    oThis.reverseNumberingMap[NewNumbering.NumMap[key]] = key;
+                }
+            }
             oThis.originalDocument.Numbering.AppendAbstractNums(NewNumbering.AbstractNum);
             oThis.originalDocument.Numbering.AppendNums(NewNumbering.Num);
 
@@ -1491,6 +1501,12 @@
 
                 if (oDiffPr.Brd)
                     oElement.Set_Borders(oDiffPr.Brd);
+
+
+                if (oElement.Pr.NumPr && oElement.Pr.NumPr.NumId && oPartnerElement.Pr.NumPr && oPartnerElement.Pr.NumPr.NumId)
+                {
+                    this.matchedNums[oPartnerElement.Pr.NumPr.NumId] = oElement.Pr.NumPr.NumId;
+                }
             }
         }
 
@@ -1641,8 +1657,24 @@
             oParagraph.Style_Add(this.copyStyle(oStyle), true);
         }
 
-        if (oParagraph.Pr.NumPr && oParagraph.Pr.NumPr.NumId && this.revisedDocument.CopyNumberingMap[oParagraph.Pr.NumPr.NumId])
-            oParagraph.SetNumPr(this.revisedDocument.CopyNumberingMap[oParagraph.Pr.NumPr.NumId], oParagraph.Pr.NumPr.Lvl);
+        if (oParagraph.Pr.NumPr && oParagraph.Pr.NumPr.NumId)
+        {
+            if(this.matchedNums[oParagraph.Pr.NumPr.NumId])
+            {
+                oParagraph.SetNumPr(this.matchedNums[oParagraph.Pr.NumPr.NumId], oParagraph.Pr.NumPr.Lvl);
+            }
+            else if(this.matchedNums[this.reverseNumberingMap[oParagraph.Pr.NumPr.NumId]])
+            {
+                oParagraph.SetNumPr(this.matchedNums[this.reverseNumberingMap[oParagraph.Pr.NumPr.NumId]], oParagraph.Pr.NumPr.Lvl);
+            }
+            else
+            {
+                if(this.revisedDocument.CopyNumberingMap[oParagraph.Pr.NumPr.NumId])
+                {
+                    oParagraph.SetNumPr(this.revisedDocument.CopyNumberingMap[oParagraph.Pr.NumPr.NumId], oParagraph.Pr.NumPr.Lvl);
+                }
+            }
+        }
     };
 
     CDocumentComparison.prototype.replaceTableStyle = function(oTable)
