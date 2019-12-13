@@ -425,13 +425,13 @@
     CDocumentComparison.prototype.getUserName = function()
     {
         var oCore = this.revisedDocument.Core;
-        if(oCore && typeof oCore.lastModifiedBy === "string")
+        if(oCore && typeof oCore.lastModifiedBy === "string" && oCore.lastModifiedBy.length > 0)
         {
             return  oCore.lastModifiedBy.split(";")[0];
         }
         else
         {
-            return "Unknown User";
+            return AscCommon.translateManager.getValue("Author");
         }
     };
 
