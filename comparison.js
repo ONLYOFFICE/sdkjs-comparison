@@ -330,6 +330,15 @@
         return false;
     };
 
+    CTextElement.prototype.isParaEnd = function ()
+    {
+        if(this.elements.length === 1)
+        {
+            return (this.elements[0].Type === para_End);
+        }
+        return false;
+    };
+
     CTextElement.prototype.compareFootnotes = function (oTextElement)
     {
         if(this.elements.length === 1 && oTextElement.elements.length === 1
@@ -1553,16 +1562,7 @@
 
         for(var i = 0; i < oNode.children.length; ++i)
         {
-            var oChildNode = oNode.children[i];
-            if(oChildNode.partner)
-            {
-                //TODO: Rework table comparison
-                this.compareRoots(oChildNode.element, oChildNode.partner.element);
-            }
-            else
-            {
-                this.applyChangesToDocContent(oNode.children[i]);
-            }
+            this.applyChangesToDocContent(oNode.children[i]);
         }
     };
 
@@ -1789,6 +1789,12 @@
 
     CDocumentComparison.prototype.applyChangesToDocContent = function(oNode)
     {
+
+        if(oNode.partner)
+        {
+            this.compareRoots(oNode.element, oNode.partner.element);
+            return;
+        }
         var oElement = oNode.element, oChange, i, j, k, oChildElement, oChildNode, oPartnerNode, oPartnerElement, oOldPrChange, oDiffPr, oStyle;
 
         oNode.changes.sort(function(c1, c2){return c2.anchor.index - c1.anchor.index});
