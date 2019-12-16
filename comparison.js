@@ -1400,7 +1400,10 @@
                 var oDiffPr = oPartnerElement.Pr.GetDiffPrChange(), oStyle;
                 oPartnerElement.Pr.PrChange = oOldPrChange;
 
-                oElement.Set_ContextualSpacing(oDiffPr.ContextualSpacing);
+                if(undefined !== oDiffPr.ContextualSpacing)
+                {
+                    oElement.Set_ContextualSpacing(oDiffPr.ContextualSpacing);
+                }
 
                 if (oDiffPr.Ind)
                 {
