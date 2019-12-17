@@ -158,6 +158,10 @@
                     return false;
                 }
             }
+            if(oElement1 instanceof ParaMath)
+            {
+                return false;
+            }
             return true;
         }
         return false;
@@ -1312,7 +1316,7 @@
                         }
                         else
                         {
-
+                            nInsertPosition = k + 1;
                         }
                         break;
                     }
@@ -1328,10 +1332,7 @@
                         }
                         else
                         {
-                            if(oChildElement.Content)
-                            {
-                                this.setParagraphReviewInfoRecursive(oChildElement);
-                            }
+
                         }
                     }
                     else
@@ -1362,6 +1363,11 @@
                             if(oChildElement.Content)
                             {
                                 this.setParagraphReviewInfoRecursive(oChildElement);
+                            }
+                            else if(oChildElement instanceof ParaMath)
+                            {
+                                oChildElement.SelectAll(1);
+                                oChildElement.Remove(-1);
                             }
                         }
                         break;
@@ -2070,19 +2076,23 @@
             }
             else
             {
+                if(oLastText && oLastText.elements.length > 0)
+                {
+                    new CNode(oLastText, oRet);
+                }
+                if(aLastWord.length > 0)
+                {
+                    oHashWords.update(aLastWord);
+                    aLastWord.length = 0;
+                }
+                oLastText = null;
                 if(Array.isArray(oRun.Content))
                 {
-                    if(oLastText && oLastText.elements.length > 0)
-                    {
-                        new CNode(oLastText, oRet);
-                    }
-                    if(aLastWord.length > 0)
-                    {
-                        oHashWords.update(aLastWord);
-                        aLastWord.length = 0;
-                    }
-                    oLastText = null;
                     this.createNodeFromRunContentElement(oRun, oRet, oHashWords);
+                }
+                else
+                {
+                    new CNode(oRun, oRet);
                 }
             }
         }
