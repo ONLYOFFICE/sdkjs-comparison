@@ -1957,7 +1957,7 @@
             {
                 if(oRun.Content.length > 0)
                 {
-                    if(this.options.getWords())
+                   // if(this.options.getWords())
                     {
                         if(!oLastText)
                         {
@@ -2041,43 +2041,44 @@
                             }
                         }
                     }
-                    else
-                    {
-                        if(oLastText && oLastText.elements.length > 0)
-                        {
-                            new CNode(oLastText, oRet);
-                        }
-                        for(j = 0; j < oRun.Content.length; ++j)
-                        {
-                            oRunElement = oRun.Content[j];
-                            if(AscFormat.isRealNumber(oRunElement.Value))
-                            {
-                                aLastWord.push(oRunElement.Value);
-                            }
-                            else
-                            {
-                                if(aLastWord.length > 0)
-                                {
-                                    oHashWords.update(aLastWord);
-                                    aLastWord.length = 0;
-                                }
-                            }
-                            oLastText = new CTextElement();
-                            oLastText.setFirstRun(oRun);
-                            oLastText.setLastRun(oRun);
-                            oLastText.elements.push(oRunElement);
-                            new CNode(oLastText, oRet);
-                        }
-                        oLastText = new CTextElement();
-                        oLastText.setFirstRun(oRun);
-                        oLastText.setLastRun(oRun);
-                    }
+                    // else
+                    // {
+                    //     if(oLastText && oLastText.elements.length > 0)
+                    //     {
+                    //         new CNode(oLastText, oRet);
+                    //     }
+                    //     for(j = 0; j < oRun.Content.length; ++j)
+                    //     {
+                    //         oRunElement = oRun.Content[j];
+                    //         if(AscFormat.isRealNumber(oRunElement.Value))
+                    //         {
+                    //             aLastWord.push(oRunElement.Value);
+                    //         }
+                    //         else
+                    //         {
+                    //             if(aLastWord.length > 0)
+                    //             {
+                    //                 oHashWords.update(aLastWord);
+                    //                 aLastWord.length = 0;
+                    //             }
+                    //         }
+                    //         oLastText = new CTextElement();
+                    //         oLastText.setFirstRun(oRun);
+                    //         oLastText.setLastRun(oRun);
+                    //         oLastText.elements.push(oRunElement);
+                    //         new CNode(oLastText, oRet);
+                    //     }
+                    //     oLastText = new CTextElement();
+                    //     oLastText.setFirstRun(oRun);
+                    //     oLastText.setLastRun(oRun);
+                    // }
                 }
             }
             else
             {
                 if(oLastText && oLastText.elements.length > 0)
                 {
+                    oLastText.updateHash(oHashWords);
                     new CNode(oLastText, oRet);
                 }
                 if(aLastWord.length > 0)
