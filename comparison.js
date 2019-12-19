@@ -1233,7 +1233,7 @@
                                         }
                                         break;
                                     }
-                                    else if(Array.isArray(oCurRun.Content))
+                                    else if(Array.isArray(oCurRun.Content) && Array.isArray(oFirstText.elements))
                                     {
                                         for(k = 0; k < oCurRun.Content.length; ++k)
                                         {
