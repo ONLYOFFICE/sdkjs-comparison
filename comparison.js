@@ -448,35 +448,14 @@
         }
     };
 
-    CDocumentComparison.prototype.compareRoots = function(oRoot1, oRoot2)
+
+    CDocumentComparison.prototype.compareElementsArray = function(aBase, aCompare, bOrig)
     {
-
-        var oOrigRoot = this.createNodeFromDocContent(oRoot1, null, null);
-        var oRevisedRoot =  this.createNodeFromDocContent(oRoot2, null, null);
-        var i, j, key;
-        var oEqualMap = {};
-        var aBase, aCompare, bOrig = true;
-        if(oOrigRoot.children.length <= oRevisedRoot.children.length)
-        {
-            aBase = oOrigRoot.children;
-            aCompare = oRevisedRoot.children;
-        }
-        else
-        {
-            bOrig = false;
-            aBase = oRevisedRoot.children;
-            aCompare = oOrigRoot.children;
-        }
-
-        var nCompareCount = aBase.length*aCompare.length;
-        var nStart = (new Date()).getTime();
+        var oMapEquals = {};
         var aBase2 = [];
         var aCompare2 = [];
         var oCompareMap = {};
-        var bMatchNoEmpty = false;
-
-
-        var nStart1 = (new Date()).getTime();
+        var bMatchNoEmpty = false, i, j, key;
         var oLCS;
         var oThis = this;
         var fLCSCallback = function(x, y) {
@@ -509,180 +488,246 @@
         };
         var fEquals;
 
-        var oMapEquals = {};
-        if(nCompareCount <= MAX_COMPARES)
+        fEquals = function(a, b)
         {
-            fEquals = function(a, b)
-            {
 
-                var bEquals = oMapEquals[a.element.Id] || oMapEquals[b.element.Id];
-                if(oEqualMap[a.element.Id])
+            var bEquals = oMapEquals[a.element.Id] || oMapEquals[b.element.Id];
+            if(oEqualMap[a.element.Id])
+            {
+                if(bEquals && !AscFormat.fApproxEqual(oEqualMap[a.element.Id].jaccard, 1.0, 0.01))
                 {
-                    if(bEquals && !AscFormat.fApproxEqual(oEqualMap[a.element.Id].jaccard, 1.0, 0.01))
-                    {
-                        return false;
-                    }
-                    if(oEqualMap[a.element.Id].map[b.element.Id])
+                    return false;
+                }
+                if(oEqualMap[a.element.Id].map[b.element.Id])
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                if(bEquals && !AscFormat.fApproxEqual(oEqualMap[b.element.Id].jaccard, 1.0, 0.01))
+                {
+                    return false;
+                }
+                if(oEqualMap[b.element.Id])
+                {
+                    if(oEqualMap[b.element.Id].map[a.element.Id])
                     {
                         return true;
                     }
                 }
-                else
+            }
+            return false;
+        };
+
+        var oEqualMap = {};
+        for(i = 0; i < aBase.length; ++i)
+        {
+            var oCurNode =  aBase[i];
+            if(oCurNode.hashWords)
+            {
+                var oCurInfo = {
+
+                    jaccard: 0,
+                    map: {},
+                    minDiff: 0,
+                    intersection: 0
+                };
+                oEqualMap[oCurNode.element.Id] = oCurInfo;
+                for(j = 0; j < aCompare.length; ++j)
                 {
-                    if(bEquals && !AscFormat.fApproxEqual(oEqualMap[b.element.Id].jaccard, 1.0, 0.01))
+                    var oCompareNode = aCompare[j];
+                    if(oCompareNode.hashWords && oCurNode.isComparable(oCompareNode))
                     {
-                        return false;
-                    }
-                    if(oEqualMap[b.element.Id])
-                    {
-                        if(oEqualMap[b.element.Id].map[a.element.Id])
+                        var dJaccard = oCurNode.hashWords.jaccard(oCompareNode.hashWords);
+                        if(oCurNode.element instanceof CTable)
                         {
-                            return true;
+                            dJaccard += MIN_JACCARD;
+                        }
+                        var dIntersection = dJaccard*(oCurNode.hashWords.count + oCompareNode.hashWords.count)/(1+dJaccard);
+                        var diffA = 0, diffB = 0, dMinDiff = 0;
+                        if(dJaccard > 0)
+                        {
+                            if(oCurNode.hashWords.count > 0)
+                            {
+                                diffA = dIntersection/oCurNode.hashWords.count;
+                            }
+                            if(oCompareNode.hashWords.count > 0)
+                            {
+                                diffB = dIntersection/oCompareNode.hashWords.count;
+                            }
+                            dMinDiff = Math.max(diffA, diffB);
+
+                            if(oCurInfo.jaccard <= dJaccard && dJaccard > MIN_JACCARD || (oCurInfo.jaccard <= MIN_JACCARD && dMinDiff > MIN_DIFF && oCurInfo.minDiff <= dMinDiff))
+                            {
+                                if(oCurInfo.jaccard < dJaccard && dJaccard > MIN_JACCARD)
+                                {
+                                    oCurInfo.map = {};
+                                    oCurInfo.minDiff = 0;
+                                }
+                                oCurInfo.map[oCompareNode.element.Id] = oCompareNode;
+                                oCurInfo.jaccard = dJaccard;
+                                oCurInfo.intersection = dIntersection;
+                                oCurInfo.minDiff = dMinDiff;
+                                if(AscFormat.fApproxEqual(dJaccard, 1.0, 0.01))
+                                {
+                                    oMapEquals[oCompareNode.element.Id] = true;
+                                }
+                            }
+                        }
+
+                    }
+                }
+                if(oCurInfo.jaccard > MIN_JACCARD || (oCurInfo.minDiff > MIN_DIFF && oCurNode.hashWords.countLetters > 0 ))
+                {
+                    aBase2.push(oCurNode);
+                    for(key in oCurInfo.map)
+                    {
+                        if(oCurInfo.map.hasOwnProperty(key))
+                        {
+                            oCompareMap[key] = true;
+                            if(oCurNode.hashWords.countLetters > 0 && oCurInfo.map[key].hashWords.countLetters > 0)
+                            {
+                                bMatchNoEmpty = true;
+                            }
                         }
                     }
                 }
-                return false;
+            }
+        }
+        for(j = 0; j < aCompare.length; ++j)
+        {
+            oCompareNode = aCompare[j];
+            if(oCompareMap[oCompareNode.element.Id])
+            {
+                aCompare2.push(oCompareNode);
+            }
+        }
+        if(!bMatchNoEmpty)
+        {
+            if(bOrig)
+            {
+                for(i = 0; i < aBase2.length; ++i)
+                {
+                    if(i !== aBase2[i].childidx)
+                    {
+                        aBase2.splice(i, aBase2[i].length - i);
+                        break;
+                    }
+                }
+                for(i = aCompare2.length - 1; i > -1; i--)
+                {
+                    if(i !== aCompare2[i].childidx)
+                    {
+                        aCompare2.splice(0, i + 1);
+                        break;
+                    }
+                }
+            }
+            else
+            {
+
+                for(i = 0; i < aCompare2.length; ++i)
+                {
+                    if(i !== aCompare2[i].childidx)
+                    {
+                        aCompare2.splice(i, aCompare2[i].length - i);
+                        break;
+                    }
+                }
+                for(i = aBase2.length - 1; i > -1; i--)
+                {
+                    if(i !== aBase2[i].childidx)
+                    {
+                        aBase2.splice(0, i + 1);
+                        break;
+                    }
+                }
+            }
+
+        }
+        if(aBase2.length > 0 && aCompare2.length > 0)
+        {
+            if(bOrig)
+            {
+                oLCS = new LCS(aBase2, aCompare2);
+            }
+            else
+            {
+                oLCS = new LCS(aCompare2, aBase2);
+            }
+            oLCS.equals = fEquals;
+            oLCS.forEachCommonSymbol(fLCSCallback);
+        }
+        oEqualMap.bMatchNoEmpty = bMatchNoEmpty;
+        return oEqualMap;
+    };
+
+    CDocumentComparison.prototype.compareRoots = function(oRoot1, oRoot2)
+    {
+
+        var oOrigRoot = this.createNodeFromDocContent(oRoot1, null, null);
+        var oRevisedRoot =  this.createNodeFromDocContent(oRoot2, null, null);
+        var i, j, key;
+        var oEqualMap = {};
+        var aBase, aCompare, bOrig = true;
+        if(oOrigRoot.children.length <= oRevisedRoot.children.length)
+        {
+            aBase = oOrigRoot.children;
+            aCompare = oRevisedRoot.children;
+        }
+        else
+        {
+            bOrig = false;
+            aBase = oRevisedRoot.children;
+            aCompare = oOrigRoot.children;
+        }
+
+        var nCompareCount = aBase.length*aCompare.length;
+        //var nStart = (new Date()).getTime();
+        var aBase2 = [];
+        var aCompare2 = [];
+        var oCompareMap = {};
+        var bMatchNoEmpty = false;
+
+        var oCurNode, oCompareNode, oCurInfo;
+        //var nStart1 = (new Date()).getTime();
+        var oLCS;
+        var oThis = this;
+        var fLCSCallback = function(x, y) {
+            var oOrigNode = oLCS.a[x];
+            var oReviseNode = oLCS.b[y];
+            var oDiff  = new Diff(oOrigNode, oReviseNode);
+            oDiff.equals = function(a, b)
+            {
+                return a.equals(b);
             };
-
-
-            for(i = 0; i < aBase.length; ++i)
+            var oMatching = new CMatching();
+            oDiff.matchTrees(oMatching);
+            var oDeltaCollector = new DeltaCollector(oMatching, oOrigNode, oReviseNode);
+            oDeltaCollector.forEachChange(function(oOperation){
+                oOperation.anchor.base.addChange(oOperation);
+            });
+            oThis.applyChangesToChildNode(oOrigNode);
+            for(var key in oMatching.Footnotes)
             {
-                var oCurNode =  aBase[i];
-                if(oCurNode.hashWords)
+                if(oMatching.Footnotes.hasOwnProperty(key))
                 {
-                    var oCurInfo = {
-
-                        jaccard: 0,
-                        map: {},
-                        minDiff: 0,
-                        intersection: 0
-                    };
-                    oEqualMap[oCurNode.element.Id] = oCurInfo;
-                    for(j = 0; j < aCompare.length; ++j)
+                    var oBaseFootnotes = AscCommon.g_oTableId.Get_ById(key);
+                    var oCompareFootnotes = oMatching.Footnotes[key];
+                    if(oBaseFootnotes && oCompareFootnotes)
                     {
-                        var oCompareNode = aCompare[j];
-                        if(oCompareNode.hashWords && oCurNode.isComparable(oCompareNode))
-                        {
-                            var dJaccard = oCurNode.hashWords.jaccard(oCompareNode.hashWords);
-                            if(oCurNode.element instanceof CTable)
-                            {
-                                dJaccard += MIN_JACCARD;
-                            }
-                            var dIntersection = dJaccard*(oCurNode.hashWords.count + oCompareNode.hashWords.count)/(1+dJaccard);
-                            var diffA = 0, diffB = 0, dMinDiff = 0;
-                            if(dJaccard > 0)
-                            {
-                                if(oCurNode.hashWords.count > 0)
-                                {
-                                    diffA = dIntersection/oCurNode.hashWords.count;
-                                }
-                                if(oCompareNode.hashWords.count > 0)
-                                {
-                                    diffB = dIntersection/oCompareNode.hashWords.count;
-                                }
-                                dMinDiff = Math.max(diffA, diffB);
-
-                                if(oCurInfo.jaccard <= dJaccard && dJaccard > MIN_JACCARD || (oCurInfo.jaccard <= MIN_JACCARD && dMinDiff > MIN_DIFF && oCurInfo.minDiff <= dMinDiff))
-                                {
-                                    if(oCurInfo.jaccard < dJaccard && dJaccard > MIN_JACCARD)
-                                    {
-                                        oCurInfo.map = {};
-                                        oCurInfo.minDiff = 0;
-                                    }
-                                    oCurInfo.map[oCompareNode.element.Id] = oCompareNode;
-                                    oCurInfo.jaccard = dJaccard;
-                                    oCurInfo.intersection = dIntersection;
-                                    oCurInfo.minDiff = dMinDiff;
-                                    if(AscFormat.fApproxEqual(dJaccard, 1., 0.01))
-                                    {
-                                        oMapEquals[oCompareNode.element.Id] = true;
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-                    if(oCurInfo.jaccard > MIN_JACCARD || (oCurInfo.minDiff > MIN_DIFF && oCurNode.hashWords.countLetters > 0 ))
-                    {
-                        aBase2.push(oCurNode);
-                        for(key in oCurInfo.map)
-                        {
-                            if(oCurInfo.map.hasOwnProperty(key))
-                            {
-                                oCompareMap[key] = true;
-                                if(oCurNode.hashWords.countLetters > 0 && oCurInfo.map[key].hashWords.countLetters > 0)
-                                {
-                                    bMatchNoEmpty = true;
-                                }
-                            }
-                        }
+                        oThis.compareRoots(oBaseFootnotes, oCompareFootnotes);
                     }
                 }
             }
-            for(j = 0; j < aCompare.length; ++j)
-            {
-                oCompareNode = aCompare[j];
-                if(oCompareMap[oCompareNode.element.Id])
-                {
-                    aCompare2.push(oCompareNode);
-                }
-            }
-            if(!bMatchNoEmpty)
-            {
-                if(bOrig)
-                {
-                    for(i = 0; i < aBase2.length; ++i)
-                    {
-                        if(i !== aBase2[i].childidx)
-                        {
-                            aBase2.splice(i, aBase2[i].length - i);
-                            break;
-                        }
-                    }
-                    for(i = aCompare2.length - 1; i > -1; i--)
-                    {
-                        if(i !== aCompare2[i].childidx)
-                        {
-                            aCompare2.splice(0, i + 1);
-                            break;
-                        }
-                    }
-                }
-                else
-                {
+        };
+        var fEquals;
 
-                    for(i = 0; i < aCompare2.length; ++i)
-                    {
-                        if(i !== aCompare2[i].childidx)
-                        {
-                            aCompare2.splice(i, aCompare2[i].length - i);
-                            break;
-                        }
-                    }
-                    for(i = aBase2.length - 1; i > -1; i--)
-                    {
-                        if(i !== aBase2[i].childidx)
-                        {
-                            aBase2.splice(0, i + 1);
-                            break;
-                        }
-                    }
-                }
-
-            }
-            if(aBase2.length > 0 && aCompare2.length > 0)
-            {
-                if(bOrig)
-                {
-                    oLCS = new LCS(aBase2, aCompare2);
-                }
-                else
-                {
-                    oLCS = new LCS(aCompare2, aBase2);
-                }
-                oLCS.equals = fEquals;
-                oLCS.forEachCommonSymbol(fLCSCallback);
-            }
+        if(nCompareCount <= MAX_COMPARES)
+        {
+            oEqualMap = this.compareElementsArray(aBase, aCompare, bOrig)
+            bMatchNoEmpty = oEqualMap.bMatchNoEmpty;
         }
         else
         {
@@ -771,16 +816,17 @@
 
                         if(aBase2.length > 0 && aCompare2.length > 0)
                         {
-                            if(bOrig)
-                            {
-                                oLCS = new LCS(aBase2, aCompare2);
-                            }
-                            else
-                            {
-                                oLCS = new LCS(aCompare2, aBase2);
-                            }
-                            oLCS.equals = fEquals;
-                            oLCS.forEachCommonSymbol(fLCSCallback);
+                            this.compareElementsArray(aBase2, aCompare2, bOrig);
+                            // if(bOrig)
+                            // {
+                            //     oLCS = new LCS(aBase2, aCompare2);
+                            // }
+                            // else
+                            // {
+                            //     oLCS = new LCS(aCompare2, aBase2);
+                            // }
+                            // oLCS.equals = fEquals;
+                            // oLCS.forEachCommonSymbol(fLCSCallback);
                         }
                     }
                     i = nStartI;
