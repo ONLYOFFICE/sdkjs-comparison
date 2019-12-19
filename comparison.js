@@ -558,9 +558,9 @@
                             }
                             dMinDiff = Math.max(diffA, diffB);
 
-                            if(oCurInfo.jaccard <= dJaccard && dJaccard > MIN_JACCARD || (oCurInfo.jaccard <= MIN_JACCARD && dMinDiff > MIN_DIFF && oCurInfo.minDiff <= dMinDiff))
+                            if(oCurInfo.jaccard <= dJaccard && dJaccard >= MIN_JACCARD || (oCurInfo.jaccard < MIN_JACCARD && dMinDiff > MIN_DIFF && oCurInfo.minDiff <= dMinDiff))
                             {
-                                if(oCurInfo.jaccard < dJaccard && dJaccard > MIN_JACCARD)
+                                if(oCurInfo.jaccard < dJaccard && dJaccard >= MIN_JACCARD)
                                 {
                                     oCurInfo.map = {};
                                     oCurInfo.minDiff = 0;
@@ -578,7 +578,7 @@
 
                     }
                 }
-                if(oCurInfo.jaccard > MIN_JACCARD || (bUseMinDiff && oCurInfo.minDiff > MIN_DIFF && oCurNode.hashWords.countLetters > 0 ))
+                if(oCurInfo.jaccard >= MIN_JACCARD || (bUseMinDiff && oCurInfo.minDiff > MIN_DIFF && oCurNode.hashWords.countLetters > 0 ))
                 {
                     aBase2.push(oCurNode);
                     for(key in oCurInfo.map)
@@ -743,7 +743,7 @@
 
                 if(a.hashWords && b.hashWords && a.isComparable(b))
                 {
-                    return a.hashWords.jaccard(b.hashWords) > MIN_JACCARD_RUDE;
+                    return a.hashWords.jaccard(b.hashWords) >= MIN_JACCARD_RUDE;
                 }
                 return false;
             };
