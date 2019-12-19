@@ -449,7 +449,7 @@
     };
 
 
-    CDocumentComparison.prototype.compareElementsArray = function(aBase, aCompare, bOrig)
+    CDocumentComparison.prototype.compareElementsArray = function(aBase, aCompare, bOrig, bUseMinDiff)
     {
         var oMapEquals = {};
         var aBase2 = [];
@@ -578,7 +578,7 @@
 
                     }
                 }
-                if(oCurInfo.jaccard > MIN_JACCARD || (oCurInfo.minDiff > MIN_DIFF && oCurNode.hashWords.countLetters > 0 ))
+                if(oCurInfo.jaccard > MIN_JACCARD || (bUseMinDiff && oCurInfo.minDiff > MIN_DIFF && oCurNode.hashWords.countLetters > 0 ))
                 {
                     aBase2.push(oCurNode);
                     for(key in oCurInfo.map)
@@ -726,7 +726,7 @@
 
         if(nCompareCount <= MAX_COMPARES)
         {
-            oEqualMap = this.compareElementsArray(aBase, aCompare, bOrig)
+            oEqualMap = this.compareElementsArray(aBase, aCompare, bOrig, false);
             bMatchNoEmpty = oEqualMap.bMatchNoEmpty;
         }
         else
@@ -780,8 +780,10 @@
                     var nStartJ = j;
                     var nStartComparIndex = j - 1;
                     var nEndCompareIndex = nStartComparIndex;
+                    aCompare2.length = 0;
                     while(j < aCompare.length && !aCompare[j].partner)
                     {
+                        aCompare2.push(aCompare[j]);
                         ++j;
                     }
                     nEndCompareIndex = j;
@@ -789,34 +791,39 @@
                     {
                         oCompareMap = {};
                         aBase2.length = 0;
-                        aCompare2.length = 0;
+                       // aCompare2.length = 0;
                         while (i < aBase.length && !aBase[i].partner)
                         {
-                            oCurNode = aBase[i];
-                            oCurInfo = oEqualMap[oCurNode.element.Id];
-                            if(oCurInfo.minDiff > MIN_DIFF)
-                            {
-                                for(key in oCurInfo.map)
-                                {
-                                    if(oCurInfo.map.hasOwnProperty(key))
-                                    {
-                                        oCompareNode = oCurInfo.map[key];
-                                        if(oCompareNode.childidx > nStartComparIndex
-                                            && oCompareNode.childidx < nEndCompareIndex)
-                                        {
-                                            oCompareMap[key] = true;
-                                            aBase2.push(oCurNode);
-                                            aCompare2.push(oCompareNode);
-                                        }
-                                    }
-                                }
-                            }
+                             oCurNode = aBase[i];
+                        //     oCurInfo = oEqualMap[oCurNode.element.Id];
+                        // //    if(oCurInfo.minDiff > MIN_DIFF)
+                        //     {
+                        //         var nLen1 = aCompare2.length;
+                        //         for(key in oCurInfo.map)
+                        //         {
+                        //             if(oCurInfo.map.hasOwnProperty(key))
+                        //             {
+                        //                 oCompareNode = oCurInfo.map[key];
+                        //                 if(oCompareNode.childidx > nStartComparIndex
+                        //                     && oCompareNode.childidx < nEndCompareIndex)
+                        //                 {
+                        //                     oCompareMap[key] = true;
+                        //                     aCompare2.push(oCompareNode);
+                        //                 }
+                        //             }
+                        //         }
+                        //         if(nLen1 < aCompare2.length)
+                        //         {
+                        //             aBase2.push(oCurNode);
+                        //         }
+                        //     }
+                            aBase2.push(oCurNode);
                             ++i;
                         }
 
                         if(aBase2.length > 0 && aCompare2.length > 0)
                         {
-                            this.compareElementsArray(aBase2, aCompare2, bOrig);
+                            this.compareElementsArray(aBase2, aCompare2, bOrig, true);
                             // if(bOrig)
                             // {
                             //     oLCS = new LCS(aBase2, aCompare2);
