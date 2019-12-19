@@ -509,12 +509,19 @@
         };
         var fEquals;
 
+        var oMapEquals = {};
         if(nCompareCount <= MAX_COMPARES)
         {
             fEquals = function(a, b)
             {
+
+                var bEquals = oMapEquals[a.element.Id] || oMapEquals[b.element.Id];
                 if(oEqualMap[a.element.Id])
                 {
+                    if(bEquals && !AscFormat.fApproxEqual(oEqualMap[a.element.Id].jaccard, 1.0, 0.01))
+                    {
+                        return false;
+                    }
                     if(oEqualMap[a.element.Id].map[b.element.Id])
                     {
                         return true;
@@ -522,6 +529,10 @@
                 }
                 else
                 {
+                    if(bEquals && !AscFormat.fApproxEqual(oEqualMap[b.element.Id].jaccard, 1.0, 0.01))
+                    {
+                        return false;
+                    }
                     if(oEqualMap[b.element.Id])
                     {
                         if(oEqualMap[b.element.Id].map[a.element.Id])
@@ -532,6 +543,7 @@
                 }
                 return false;
             };
+
 
             for(i = 0; i < aBase.length; ++i)
             {
@@ -581,7 +593,10 @@
                                     oCurInfo.jaccard = dJaccard;
                                     oCurInfo.intersection = dIntersection;
                                     oCurInfo.minDiff = dMinDiff;
-
+                                    if(AscFormat.fApproxEqual(dJaccard, 1., 0.01))
+                                    {
+                                        oMapEquals[oCompareNode.element.Id] = true;
+                                    }
                                 }
                             }
 
