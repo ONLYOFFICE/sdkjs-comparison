@@ -2137,24 +2137,27 @@
             }
             else
             {
-                if(oLastText && oLastText.elements.length > 0)
+                if(!(oRun instanceof CParagraphBookmark))
                 {
-                    oLastText.updateHash(oHashWords);
-                    new CNode(oLastText, oRet);
-                }
-                if(aLastWord.length > 0)
-                {
-                    oHashWords.update(aLastWord);
-                    aLastWord.length = 0;
-                }
-                oLastText = null;
-                if(Array.isArray(oRun.Content))
-                {
-                    this.createNodeFromRunContentElement(oRun, oRet, oHashWords);
-                }
-                else
-                {
-                    new CNode(oRun, oRet);
+                    if(oLastText && oLastText.elements.length > 0)
+                    {
+                        oLastText.updateHash(oHashWords);
+                        new CNode(oLastText, oRet);
+                    }
+                    if(aLastWord.length > 0)
+                    {
+                        oHashWords.update(aLastWord);
+                        aLastWord.length = 0;
+                    }
+                    oLastText = null;
+                    if(Array.isArray(oRun.Content))
+                    {
+                        this.createNodeFromRunContentElement(oRun, oRet, oHashWords);
+                    }
+                    else
+                    {
+                        new CNode(oRun, oRet);
+                    }
                 }
             }
         }
@@ -2181,7 +2184,7 @@
         var bHaveRevisons2 = false;
         var oDoc2 = AscFormat.ExecuteNoHistory(function(){
             AscCommon.g_oIdCounter.m_bLoad = true;
-            var oBinaryFileReader, openParams        = {checkFileSize : /*this.isMobileVersion*/false, charCount : 0, parCount : 0};
+            var oBinaryFileReader, openParams        = {checkFileSize : /*this.isMobileVersion*/false, charCount : 0, parCount : 0, disableRevisions: true};
             AscCommon.g_oTableId.m_bTurnOff = false;
             var oDoc2 = new CDocument(oApi.WordControl.m_oDrawingDocument, true);
             oDoc2.Footnotes = oDoc1.Footnotes;
@@ -2191,6 +2194,7 @@
 
             oApi.WordControl.m_oLogicDocument = oDoc2;
             AscCommon.pptx_content_loader.Start_UseFullUrl(oApi.insertDocumentUrlsData);
+
             if (!oBinaryFileReader.Read(sBinary2))
             {
                 oDoc2 = null;
@@ -2198,21 +2202,7 @@
             if(oDoc2)
             {
                 oDoc2.ForceCopySectPr = false;
-
-                oDoc2.TrackRevisionsManager.ContinueTrackRevisions();
-                bHaveRevisons2 = oDoc2.TrackRevisionsManager.Have_Changes();
-                oDoc2.Start_SilentMode();
-
-                var LogicDocuments = oDoc2.TrackRevisionsManager.Get_AllChangesLogicDocuments();
-                for (var LogicDocId in LogicDocuments)
-                {
-                    var LogicDoc = AscCommon.g_oTableId.Get_ById(LogicDocId);
-                    if (LogicDoc)
-                    {
-                        LogicDoc.AcceptRevisionChanges(undefined, true);
-                    }
-                }
-                oDoc2.End_SilentMode(false);
+                bHaveRevisons2 = oBinaryFileReader.oReadResult && oBinaryFileReader.oReadResult.hasRevisions;
             }
 
             AscCommon.g_oIdCounter.m_bLoad = false;
