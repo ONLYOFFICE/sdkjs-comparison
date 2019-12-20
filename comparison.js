@@ -151,14 +151,32 @@
                     return oElement1.equals(oElement2);
                 }
             }
-            if(oElement1 instanceof CTable)
+            if(oElement1 instanceof AscCommonWord.CTable)
             {
                 if(oElement1.TableGrid.length !== oElement2.TableGrid.length)
                 {
                     return false;
                 }
             }
-            if(oElement1 instanceof ParaMath)
+            if(oElement1 instanceof AscCommonWord.CTableRow)
+            {
+                if(oElement1.Content.length !== oElement2.Content.length)
+                {
+                    return false;
+                }
+            }
+            if(oElement1 instanceof AscCommonWord.CDocumentContent && oElement1.Parent instanceof AscCommonWord.CTableCell)
+            {
+                if(!oElement2.Parent)
+                {
+                    return false;
+                }
+                if(oElement1.Parent.Index !== oElement2.Parent.Index)
+                {
+                    return false;
+                }
+            }
+            if(oElement1 instanceof AscCommonWord.ParaMath)
             {
                 return false;
             }
