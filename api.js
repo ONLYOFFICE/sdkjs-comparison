@@ -41,7 +41,16 @@
     };
     window['Asc']['asc_docs_api'].prototype["asc_CompareDocumentFile"] = window['Asc']['asc_docs_api'].prototype.asc_CompareDocumentFile = function (oOptions) {
         if (window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"])
-            return window["AscDesktopEditor"]["CompareDocumentFile"](oOptions);        
+        {
+            window["AscDesktopEditor"]["OpenFilenameDialog"]("word", false, function(_file){
+                var file = _file;
+                if (Array.isArray(file))
+                    file = file[0];
+                
+                if (file && "" != file)
+                    window["AscDesktopEditor"]["CompareDocumentFile"](file, oOptions);
+            });    
+        }
         var t = this;
         AscCommon.ShowDocumentFileDialog(function (error, files) {
             if (Asc.c_oAscError.ID.No !== error) {
