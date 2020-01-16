@@ -2200,7 +2200,7 @@
     window['AscCommonWord'].CDocumentComparison = CDocumentComparison;
     window['AscCommonWord'].ComparisonOptions = window['AscCommonWord']["ComparisonOptions"] = ComparisonOptions;
 
-    function CompareBinary(oApi, sBinary2, oOptions)
+    function CompareBinary(oApi, sBinary2, oOptions, bForceApplyChanges)
     {
 
         var oDoc1 = oApi.WordControl.m_oLogicDocument;
@@ -2244,7 +2244,7 @@
                 oComp.compare();
             };
 
-            if(window['NATIVE_EDITOR_ENJINE'] )
+            if(window['NATIVE_EDITOR_ENJINE'] || bForceApplyChanges)
             {
                 fCallback();
             }
