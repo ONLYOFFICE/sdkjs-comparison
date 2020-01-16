@@ -56,7 +56,7 @@
         });
     };
     // for local files in desktop apps
-    window["onDocumentCompare"] = function(folder, file_content, file_content_len, options) {
+    window["onDocumentCompare"] = function(folder, file_content, file_content_len, image_map, options) {
         var api = window.editor;
         if (file_content == "")
         {
@@ -64,9 +64,12 @@
             return;
         }
 
-        var file = new AscCommon.OpenFileResult();
-        var array = AscCommon.getBinaryArray(file_content, file_content_len);
+        var file = {
+            IsValid : function() { return true; },
+            GetBinary: function() { return AscCommon.getBinaryArray(file_content, file_content_len); },
+            GetImageMap: function() { return image_map; }
+        };
 
-        AscCommonWord.CompareBinary(api, array, options, true/*local file in desktop app*/);
+        AscCommonWord.CompareDocuments(api, file);
     };
 })(window, window.document);
