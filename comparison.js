@@ -2200,7 +2200,7 @@
     window['AscCommonWord'].CDocumentComparison = CDocumentComparison;
     window['AscCommonWord'].ComparisonOptions = window['AscCommonWord']["ComparisonOptions"] = ComparisonOptions;
 
-    function CompareBinary(oApi, sBinary2, oOptions)
+    function CompareBinary(oApi, sBinary2, oOptions, bForceApplyChanges)
     {
 
         var oDoc1 = oApi.WordControl.m_oLogicDocument;
@@ -2215,6 +2215,7 @@
             oDoc2.Footnotes = oDoc1.Footnotes;
             oApi.WordControl.m_oDrawingDocument.m_oLogicDocument = oDoc2;
             oDoc2.ForceCopySectPr = true;
+
             oBinaryFileReader = new AscCommonWord.BinaryFileReader(oDoc2, openParams);
 
             oApi.WordControl.m_oLogicDocument = oDoc2;
@@ -2244,7 +2245,7 @@
                 oComp.compare();
             };
 
-            if(window['NATIVE_EDITOR_ENJINE'] )
+            if(window['NATIVE_EDITOR_ENJINE'] || bForceApplyChanges)
             {
                 fCallback();
             }
@@ -2277,6 +2278,24 @@
             AscCommon.pptx_content_loader.End_UseFullUrl();
         }
     }
+
+
+    function CompareDocuments(oApi, oTmpDocument)
+    {
+        if(!window['NATIVE_EDITOR_ENJINE'])
+        {
+            return;
+        }
+        oApi.insertDocumentUrlsData = {
+            imageMap: oTmpDocument["GetImageMap"](), documents: [], convertCallback: function (_api, url) {
+            }, endCallback: function (_api) {
+            }
+        };
+        CompareBinary(oApi, oTmpDocument["GetBinary"](), null, true);
+        oApi.insertDocumentUrlsData = null;
+    }
+
     window['AscCommonWord']["CompareBinary"] =  window['AscCommonWord'].CompareBinary = CompareBinary;
     window['AscCommonWord']["ComparisonOptions"] = window['AscCommonWord'].ComparisonOptions = ComparisonOptions;
+    window['AscCommonWord']['CompareDocuments'] = CompareDocuments;
 })();
