@@ -64,11 +64,10 @@
             return;
         }
 
-        var file = {
-            IsValid : function() { return true; },
-            GetBinary: function() { return AscCommon.getBinaryArray(file_content, file_content_len); },
-            GetImageMap: function() { return image_map; }
-        };
+        var file = {};
+        file["IsValid"] = function() { return true; };
+        file["GetBinary"] = function() { return AscCommon.getBinaryArray(file_content, file_content_len); };
+        file["GetImageMap"] = function() { return image_map; };
 
         AscCommonWord.CompareDocuments(api, file);
     };

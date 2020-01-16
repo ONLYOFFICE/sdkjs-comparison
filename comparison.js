@@ -2282,10 +2282,6 @@
 
     function CompareDocuments(oApi, oTmpDocument)
     {
-        if(!window['NATIVE_EDITOR_ENJINE'])
-        {
-            return;
-        }
         oApi.insertDocumentUrlsData = {
             imageMap: oTmpDocument["GetImageMap"](), documents: [], convertCallback: function (_api, url) {
             }, endCallback: function (_api) {
