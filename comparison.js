@@ -452,6 +452,11 @@
         this.StylesMap = {};
         this.matchedNums = {};
         this.reverseNumberingMap = {};
+
+        this.copyPr = {
+            CopyReviewPr: false,
+            Comparison: this
+        };
     }
     CDocumentComparison.prototype.getUserName = function()
     {
@@ -1209,7 +1214,7 @@
                             for(t = oCurRun.Content.length - 1; t > -1; --t)
                             {
                                 oCurRun.Paragraph = oElement.Paragraph || oElement;
-                                oNewRun = oCurRun.Copy2({CopyReviewPr : false});
+                                oNewRun = oCurRun.Copy2(this.copyPr);
                                 oCurRun.Paragraph = oParentParagraph2;
                                 if(oLastText.elements[oLastText.elements.length - 1] === oCurRun.Content[t])
                                 {
@@ -1224,13 +1229,13 @@
                         }
                         else
                         {
-                            aContentToInsert.splice(0, 0, oCurRun.Copy(false, {CopyReviewPr : false}));
+                            aContentToInsert.splice(0, 0, oCurRun.Copy(false, this.copyPr));
                         }
                         break;
                     }
                     else if(oLastText === oParentParagraph.Content[k])
                     {
-                        aContentToInsert.splice(0, 0,  oParentParagraph.Content[k].Copy(false, {CopyReviewPr : false}));
+                        aContentToInsert.splice(0, 0,  oParentParagraph.Content[k].Copy(false, this.copyPr));
                         break;
                     }
                 }
@@ -1259,13 +1264,13 @@
                         oCurRun = oParentParagraph.Content[k];
                         if(oCurRun !== oFirstRun && oCurRun !== oFirstText)
                         {
-                            aContentToInsert.splice(0, 0, oCurRun.Copy(false, {CopyReviewPr : false}));
+                            aContentToInsert.splice(0, 0, oCurRun.Copy(false, this.copyPr));
                         }
                         else
                         {
                             if(oCurRun === oFirstText)
                             {
-                                aContentToInsert.splice(0, 0,  oCurRun.Copy(false, {CopyReviewPr : false}));
+                                aContentToInsert.splice(0, 0,  oCurRun.Copy(false, this.copyPr));
                             }
                             else
                             {
@@ -1281,7 +1286,7 @@
                                         else
                                         {
                                             oCurRun.Paragraph = oElement.Paragraph || oElement;
-                                            oNewRun = oCurRun.Copy2({CopyReviewPr : false});
+                                            oNewRun = oCurRun.Copy2(this.copyPr);
                                             oCurRun.Paragraph = oParentParagraph2;
                                             aContentToInsert.splice(0, 0, oNewRun);
                                         }
@@ -1635,7 +1640,7 @@
             }
             for(j = oChange.insert.length - 1; j > -1;  --j)
             {
-                oElement.Content.splice(oChange.anchor.index, 0, oChange.insert[j].element.Copy(oElement, {CopyReviewPr : false}));
+                oElement.Content.splice(oChange.anchor.index, 0, oChange.insert[j].element.Copy(oElement, this.copyPr));
                 History.Add(new CChangesTableAddRow(oElement, oChange.anchor.index, [oElement.Content[oChange.anchor.index]]));
             }
             oElement.Internal_ReIndexing(0);
@@ -1744,6 +1749,15 @@
     };
 
 
+    CDocumentComparison.prototype.getRevisedStyle = function(sStyleId)
+    {
+        if(this.revisedDocument)
+        {
+            return this.revisedDocument.Styles.Get(sStyleId);
+        }
+        return null;
+    };
+
     CDocumentComparison.prototype.replaceParagraphStyle = function(oParagraph)
     {
         var oStyle;
@@ -1832,6 +1846,10 @@
         {
             this.setTableReviewInfoRecursive(oChildElement);
         }
+        else if(oChildElement instanceof CBlockLevelSdt)
+        {
+            this.setDocContentReviewInfoRecursive(oChildElement.Content);
+        }
     };
 
     CDocumentComparison.prototype.insertNodesToDocContent = function(oElement, nIndex, aInsert)
@@ -1843,14 +1861,14 @@
             var oChildElement = null;
             if(aInsert[j].element.Get_Type)
             {
-                oChildElement = aInsert[j].element.Copy(oElement, oElement.DrawingDocument,  {CopyReviewPr : false});
+                oChildElement = aInsert[j].element.Copy(oElement, oElement.DrawingDocument, this.copyPr);
                 this.replaceParagraphStyle(oChildElement);
             }
             else
             {
                 if(aInsert[j].element.Parent && aInsert[j].element.Parent.Get_Type)
                 {
-                    oChildElement = aInsert[j].element.Parent.Copy(oElement, oElement.DrawingDocument,  {CopyReviewPr : false});
+                    oChildElement = aInsert[j].element.Parent.Copy(oElement, oElement.DrawingDocument, this.copyPr);
                 }
             }
             if(oChildElement)
