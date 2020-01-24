@@ -235,6 +235,17 @@
                     return false;
                 }
             }
+            if(this.element instanceof AscCommonWord.Paragraph)
+            {
+                if(!this.element.SectPr && oNode.element.SectPr)
+                {
+                    return false;
+                }
+                if(!oNode.element.SectPr && this.element.SectPr)
+                {
+                    return false;
+                }
+            }
             return true;
         }
         return false;
@@ -990,87 +1001,88 @@
             oThis.originalDocument.Numbering.AppendNums(NewNumbering.Num);
 
 
+            // var oSectInfoOrig = oThis.originalDocument.SectionsInfo;
+            // var oSectInfoRevised = oThis.revisedDocument.SectionsInfo;
+            // if(oSectInfoOrig && oSectInfoRevised)
+            // {
+            //     var aFooterDefault = [];
+            //     var aFooterEven  = [];
+            //     var aFooterFirst =  [];
+            //     var aHeaderDefault = [];
+            //     var aHeaderEven = [];
+            //     var aHeaderFirst =  [];
+            //
+            //     var aFooterDefaultRev =  [];
+            //     var aFooterEvenRev  = [];
+            //     var aFooterFirstRev =  [];
+            //     var aHeaderDefaultRev = [];
+            //     var aHeaderEvenRev = [];
+            //     var aHeaderFirstRev =  [];
+            //     for(i = 0; i < oSectInfoOrig.Elements.length; i++ )
+            //     {
+            //         var oSectPrOrig = oSectInfoOrig.Elements[i].SectPr;
+            //         if(oSectPrOrig.FooterDefault)
+            //         {
+            //             aFooterDefault.push(oSectPrOrig.FooterDefault.Content);
+            //         }
+            //         if(oSectPrOrig.FooterEven)
+            //         {
+            //             aFooterEven.push(oSectPrOrig.FooterEven.Content);
+            //         }
+            //         if(oSectPrOrig.FooterFirst)
+            //         {
+            //             aFooterFirst.push(oSectPrOrig.FooterFirst.Content);
+            //         }
+            //         if(oSectPrOrig.HeaderDefault)
+            //         {
+            //             aHeaderDefault.push(oSectPrOrig.HeaderDefault.Content);
+            //         }
+            //         if(oSectPrOrig.HeaderEven)
+            //         {
+            //             aHeaderEven.push(oSectPrOrig.HeaderEven.Content);
+            //         }
+            //         if(oSectPrOrig.HeaderFirst)
+            //         {
+            //             aHeaderFirst.push(oSectPrOrig.HeaderFirst.Content);
+            //         }
+            //     }
+            //     for(i = 0; i < oSectInfoRevised.Elements.length; i++ )
+            //     {
+            //         var oSectPrRev = oSectInfoRevised.Elements[i].SectPr;
+            //         if(oSectPrRev.FooterDefault)
+            //         {
+            //             aFooterDefaultRev.push(oSectPrRev.FooterDefault.Content);
+            //         }
+            //         if(oSectPrRev.FooterEven)
+            //         {
+            //             aFooterEvenRev.push(oSectPrRev.FooterEven.Content);
+            //         }
+            //         if(oSectPrRev.FooterFirst)
+            //         {
+            //             aFooterFirstRev.push(oSectPrRev.FooterFirst.Content);
+            //         }
+            //         if(oSectPrRev.HeaderDefault)
+            //         {
+            //             aHeaderDefaultRev.push(oSectPrRev.HeaderDefault.Content);
+            //         }
+            //         if(oSectPrRev.HeaderEven)
+            //         {
+            //             aHeaderEvenRev.push(oSectPrRev.HeaderEven.Content);
+            //         }
+            //         if(oSectPrRev.HeaderFirst)
+            //         {
+            //             aHeaderFirstRev.push(oSectPrRev.HeaderFirst.Content);
+            //         }
+            //     }
+            //     oThis.compareContentsArrays(aFooterDefault, aFooterDefaultRev);
+            //     oThis.compareContentsArrays(aFooterEven, aFooterEvenRev);
+            //     oThis.compareContentsArrays(aFooterFirst, aFooterFirstRev);
+            //     oThis.compareContentsArrays(aHeaderDefault, aHeaderDefaultRev);
+            //     oThis.compareContentsArrays(aHeaderEven, aHeaderEvenRev);
+            //     oThis.compareContentsArrays(aHeaderFirst, aHeaderFirstRev);
+            // }
             oThis.compareRoots(oThis.originalDocument, oThis.revisedDocument);
-            var oSectInfoOrig = oThis.originalDocument.SectionsInfo;
-            var oSectInfoRevised = oThis.revisedDocument.SectionsInfo;
-            if(oSectInfoOrig && oSectInfoRevised)
-            {
-                var aFooterDefault = [];
-                var aFooterEven  = [];
-                var aFooterFirst =  [];
-                var aHeaderDefault = [];
-                var aHeaderEven = [];
-                var aHeaderFirst =  [];
-
-                var aFooterDefaultRev =  [];
-                var aFooterEvenRev  = [];
-                var aFooterFirstRev =  [];
-                var aHeaderDefaultRev = [];
-                var aHeaderEvenRev = [];
-                var aHeaderFirstRev =  [];
-                for(i = 0; i < oSectInfoOrig.Elements.length; i++ )
-                {
-                    var oSectPrOrig = oSectInfoOrig.Elements[i].SectPr;
-                    if(oSectPrOrig.FooterDefault)
-                    {
-                        aFooterDefault.push(oSectPrOrig.FooterDefault.Content);
-                    }
-                    if(oSectPrOrig.FooterEven)
-                    {
-                        aFooterEven.push(oSectPrOrig.FooterEven.Content);
-                    }
-                    if(oSectPrOrig.FooterFirst)
-                    {
-                        aFooterFirst.push(oSectPrOrig.FooterFirst.Content);
-                    }
-                    if(oSectPrOrig.HeaderDefault)
-                    {
-                        aHeaderDefault.push(oSectPrOrig.HeaderDefault.Content);
-                    }
-                    if(oSectPrOrig.HeaderEven)
-                    {
-                        aHeaderEven.push(oSectPrOrig.HeaderEven.Content);
-                    }
-                    if(oSectPrOrig.HeaderFirst)
-                    {
-                        aHeaderFirst.push(oSectPrOrig.HeaderFirst.Content);
-                    }
-                }
-                for(i = 0; i < oSectInfoRevised.Elements.length; i++ )
-                {
-                    var oSectPrRev = oSectInfoRevised.Elements[i].SectPr;
-                    if(oSectPrRev.FooterDefault)
-                    {
-                        aFooterDefaultRev.push(oSectPrRev.FooterDefault.Content);
-                    }
-                    if(oSectPrRev.FooterEven)
-                    {
-                        aFooterEvenRev.push(oSectPrRev.FooterEven.Content);
-                    }
-                    if(oSectPrRev.FooterFirst)
-                    {
-                        aFooterFirstRev.push(oSectPrRev.FooterFirst.Content);
-                    }
-                    if(oSectPrRev.HeaderDefault)
-                    {
-                        aHeaderDefaultRev.push(oSectPrRev.HeaderDefault.Content);
-                    }
-                    if(oSectPrRev.HeaderEven)
-                    {
-                        aHeaderEvenRev.push(oSectPrRev.HeaderEven.Content);
-                    }
-                    if(oSectPrRev.HeaderFirst)
-                    {
-                        aHeaderFirstRev.push(oSectPrRev.HeaderFirst.Content);
-                    }
-                }
-                oThis.compareContentsArrays(aFooterDefault, aFooterDefaultRev);
-                oThis.compareContentsArrays(aFooterEven, aFooterEvenRev);
-                oThis.compareContentsArrays(aFooterFirst, aFooterFirstRev);
-                oThis.compareContentsArrays(aHeaderDefault, aHeaderDefaultRev);
-                oThis.compareContentsArrays(aHeaderEven, aHeaderEvenRev);
-                oThis.compareContentsArrays(aHeaderFirst, aHeaderFirstRev);
-            }
+            oThis.compareSectPr(oThis.originalDocument, oThis.revisedDocument);
             if(oApi.DocInfo.UserInfo)
             {
                 oApi.DocInfo.UserInfo.put_Id(oldUserId);
@@ -1169,6 +1181,43 @@
                 }
             }
         });
+
+        var oOrigSectPr = oParagraph.SectPr, oOrigContent;
+        if(oOrigSectPr)
+        {
+            oOrigContent = oOrigSectPr.HeaderFirst && oOrigSectPr.HeaderFirst.Content;
+            if(oOrigContent)
+            {
+                this.setDocContentReviewInfoRecursive(oOrigContent);
+            }
+            oOrigContent = oOrigSectPr.HeaderEven && oOrigSectPr.HeaderEven.Content;
+            if(oOrigContent)
+            {
+                this.setDocContentReviewInfoRecursive(oOrigContent);
+            }
+            oOrigContent = oOrigSectPr.HeaderDefault && oOrigSectPr.HeaderDefault.Content;
+            if(oOrigContent)
+            {
+                this.setDocContentReviewInfoRecursive(oOrigContent);
+            }
+            oOrigContent = oOrigSectPr.FooterFirst && oOrigSectPr.FooterFirst.Content;
+            if(oOrigContent)
+            {
+                this.setDocContentReviewInfoRecursive(oOrigContent);
+            }
+
+            oOrigContent = oOrigSectPr.FooterEven && oOrigSectPr.FooterEven.Content;
+            if(oOrigContent)
+            {
+                this.setDocContentReviewInfoRecursive(oOrigContent);
+            }
+            oOrigContent = oOrigSectPr.FooterDefault && oOrigSectPr.FooterDefault.Content;
+            if(oOrigContent)
+            {
+                this.setDocContentReviewInfoRecursive(oOrigContent);
+            }
+        }
+
     };
 
     CDocumentComparison.prototype.applyChangesToParagraph = function(oNode)
@@ -1616,9 +1665,126 @@
                 {
                     this.matchedNums[oPartnerElement.Pr.NumPr.NumId] = oElement.Pr.NumPr.NumId;
                 }
+                this.compareSectPr(oElement, oPartnerElement);
             }
         }
 
+    };
+
+    CDocumentComparison.prototype.compareSectPr = function(oElement, oPartnerElement)
+    {
+        var oOrigSectPr = oElement.SectPr;
+        var oReviseSectPr = oPartnerElement.SectPr;
+        var oOrigContent, oReviseContent;
+        if(!oOrigSectPr && oReviseSectPr)
+        {
+            var oLogicDocument = this.originalDocument;
+            var bCopyHdrFtr = true;
+            var SectPr = new CSectionPr(oLogicDocument);
+            SectPr.Copy(oReviseSectPr, bCopyHdrFtr, this.copyPr);
+            if(oElement.Set_SectionPr)
+            {
+                oElement.Set_SectionPr(SectPr);
+            }
+        }
+        if(oOrigSectPr)
+        {
+            oOrigContent = oOrigSectPr.HeaderFirst && oOrigSectPr.HeaderFirst.Content;
+            oReviseContent = oReviseSectPr && oReviseSectPr.HeaderFirst && oReviseSectPr.HeaderFirst.Content;
+            if(oOrigContent && !oReviseContent)
+            {
+                this.setDocContentReviewInfoRecursive(oOrigContent);
+            }
+            else if(oOrigContent && oReviseContent)
+            {
+                this.compareRoots(oOrigContent, oReviseContent);
+            }
+            else if(!oOrigContent && oReviseContent && oReviseSectPr.HeaderFirst)
+            {
+                oOrigSectPr.Set_Header_First(oReviseSectPr.HeaderFirst.Copy(this.originalDocument, this.copyPr));
+            }
+
+
+            oOrigContent = oOrigSectPr.HeaderEven && oOrigSectPr.HeaderEven.Content;
+            oReviseContent = oReviseSectPr && oReviseSectPr.HeaderEven && oReviseSectPr.HeaderEven.Content;
+            if(oOrigContent && !oReviseContent)
+            {
+                this.setDocContentReviewInfoRecursive(oOrigContent);
+            }
+            else if(oOrigContent && oReviseContent)
+            {
+                this.compareRoots(oOrigContent, oReviseContent);
+            }
+            else if(!oOrigContent && oReviseContent && oReviseSectPr.HeaderEven)
+            {
+                oOrigSectPr.Set_Header_Even(oReviseSectPr.HeaderEven.Copy(this.originalDocument, this.copyPr));
+            }
+
+
+            oOrigContent = oOrigSectPr.HeaderDefault && oOrigSectPr.HeaderDefault.Content;
+            oReviseContent = oReviseSectPr && oReviseSectPr.HeaderDefault && oReviseSectPr.HeaderDefault.Content;
+            if(oOrigContent && !oReviseContent)
+            {
+                this.setDocContentReviewInfoRecursive(oOrigContent);
+            }
+            else if(oOrigContent && oReviseContent)
+            {
+                this.compareRoots(oOrigContent, oReviseContent);
+            }
+            else if(!oOrigContent && oReviseContent && oReviseSectPr.HeaderDefault)
+            {
+                oOrigSectPr.Set_Header_Default(oReviseSectPr.HeaderDefault.Copy(this.originalDocument, this.copyPr));
+            }
+
+
+            oOrigContent = oOrigSectPr.FooterFirst && oOrigSectPr.FooterFirst.Content;
+            oReviseContent = oReviseSectPr && oReviseSectPr.FooterFirst && oReviseSectPr.FooterFirst.Content;
+            if(oOrigContent && !oReviseContent)
+            {
+                this.setDocContentReviewInfoRecursive(oOrigContent);
+            }
+            else if(oOrigContent && oReviseContent)
+            {
+                this.compareRoots(oOrigContent, oReviseContent);
+            }
+            else if(!oOrigContent && oReviseContent && oReviseSectPr.FooterFirst)
+            {
+                oOrigSectPr.Set_Footer_First(oReviseSectPr.FooterFirst.Copy(this.originalDocument, this.copyPr));
+            }
+
+
+            oOrigContent = oOrigSectPr.FooterEven && oOrigSectPr.FooterEven.Content;
+            oReviseContent = oReviseSectPr && oReviseSectPr.FooterEven && oReviseSectPr.FooterEven.Content;
+            if(oOrigContent && !oReviseContent)
+            {
+                this.setDocContentReviewInfoRecursive(oOrigContent);
+            }
+            else if(oOrigContent && oReviseContent)
+            {
+                this.compareRoots(oOrigContent, oReviseContent);
+            }
+            else if(!oOrigContent && oReviseContent && oReviseSectPr.FooterEven)
+            {
+                oOrigSectPr.Set_Footer_Even(oReviseSectPr.FooterEven.Copy(this.originalDocument, this.copyPr));
+            }
+
+
+            oOrigContent = oOrigSectPr.FooterDefault && oOrigSectPr.FooterDefault.Content;
+            oReviseContent = oReviseSectPr && oReviseSectPr.FooterDefault && oReviseSectPr.FooterDefault.Content;
+            if(oOrigContent && !oReviseContent)
+            {
+                this.setDocContentReviewInfoRecursive(oOrigContent);
+            }
+            else if(oOrigContent && oReviseContent)
+            {
+                this.compareRoots(oOrigContent, oReviseContent);
+            }
+            else if(!oOrigContent && oReviseContent && oReviseSectPr.FooterDefault)
+            {
+                oOrigSectPr.Set_Footer_Default(oReviseSectPr.FooterDefault.Copy(this.originalDocument, this.copyPr));
+            }
+
+        }
     };
 
     CDocumentComparison.prototype.applyChangesToTable = function(oNode)
@@ -1862,7 +2028,6 @@
             if(aInsert[j].element.Get_Type)
             {
                 oChildElement = aInsert[j].element.Copy(oElement, oElement.DrawingDocument, this.copyPr);
-                this.replaceParagraphStyle(oChildElement);
             }
             else
             {
