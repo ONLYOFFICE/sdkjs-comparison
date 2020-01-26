@@ -1872,6 +1872,15 @@
         if(oStyleCopy = this.originalDocument.Styles.Get(sStyleId))
         {
             this.StylesMap[oStyle.Id] = sStyleId;
+            var oOldParaPr = oStyleCopy.ParaPr.Copy(undefined, undefined);
+            var oNewParaPr = oStyle.ParaPr.Copy(undefined, this.copyPr);
+            oOldParaPr.PrChange = oNewParaPr;
+            var oDiffParaPr = oOldParaPr.GetDiffPrChange();
+            oOldParaPr.PrChange = undefined;
+            oNewParaPr.PrChange = oDiffParaPr;
+            oNewParaPr.ReviewInfo = new CReviewInfo();
+            this.setReviewInfo(oNewParaPr.ReviewInfo);
+            oStyleCopy.Set_ParaPr(oNewParaPr);
             return sStyleId;
         }
         oStyleCopy = oStyle.Copy();
@@ -2017,6 +2026,27 @@
         }
     };
 
+    CDocumentComparison.prototype.setReviewInfo = function(oReviewIno, oCore)
+    {
+        oReviewIno.Editor   = this.api;
+        oReviewIno.UserId   = "";
+        oReviewIno.MoveType = Asc.c_oAscRevisionsMove.NoMove;
+        oReviewIno.PrevType = -1;
+        oReviewIno.PrevInfo = null;
+        oReviewIno.UserName = this.getUserName();
+        if(oCore)
+        {
+            if(oCore.modified instanceof Date)
+            {
+                oReviewIno.DateTime = oCore.modified.getTime();
+            }
+        }
+        else
+        {
+            oReviewIno.DateTime = "Unknown";
+        }
+    };
+
     CDocumentComparison.prototype.updateReviewInfo = function(oObject, nType, bParaEnd)
     {
         if(!bParaEnd && oObject.IsParaEndRun &&oObject.IsParaEndRun() )
@@ -2027,23 +2057,7 @@
         {
             var oCore = this.revisedDocument.Core;
             var oReviewIno = oObject.ReviewInfo.Copy();
-            oReviewIno.Editor   = this.api;
-            oReviewIno.UserId   = "";
-            oReviewIno.MoveType = Asc.c_oAscRevisionsMove.NoMove;
-            oReviewIno.PrevType = -1;
-            oReviewIno.PrevInfo = null;
-            oReviewIno.UserName = this.getUserName();
-            if(oCore)
-            {
-                if(oCore.modified instanceof Date)
-                {
-                    oReviewIno.DateTime = oCore.modified.getTime();
-                }
-            }
-            else
-            {
-                oReviewIno.DateTime = "Unknown";
-            }
+            this.setReviewInfo(oReviewIno, oCore);
             oObject.SetReviewTypeWithInfo(nType, oReviewIno, false);
             if(nType === reviewtype_Remove && oObject.CheckRunContent)
             {
