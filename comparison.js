@@ -1829,17 +1829,32 @@
         }
     };
 
-
-    CDocumentComparison.prototype.copyTableStylePr = function(oPr)
+    CDocumentComparison.prototype.getCopyNumId = function(sNumId)
     {
-        var oCopyPr = oPr.Copy();
-        if(undefined !== oCopyPr.ParaPr.NumPr && undefined !== oCopyPr.ParaPr.NumPr.NumId)
+        var NewId = undefined;
+        if(this.matchedNums[sNumId])
         {
-            var NewId = this.revisedDocument.CopyNumberingMap[oCopyPr.ParaPr.NumPr.NumId];
-            if (undefined !== NewId)
-                oCopyPr.ParaPr.SetNumPr(NewId, oCopyPr.ParaPr.NumPr.Lvl);
+            NewId = this.matchedNums[sNumId];
         }
-        return oCopyPr;
+        else if(this.matchedNums[this.reverseNumberingMap[sNumId]])
+        {
+            NewId = this.matchedNums[this.reverseNumberingMap[sNumId]];
+        }
+        else
+        {
+            if(this.revisedDocument.CopyNumberingMap[sNumId])
+            {
+                NewId = this.revisedDocument.CopyNumberingMap[sNumId];
+            }
+        }
+        return NewId;
+    };
+
+
+    CDocumentComparison.prototype.copyStyleById = function(sId)
+    {
+        return this.copyStyle(this.revisedDocument.Styles.Get(sId));
+
     };
 
     CDocumentComparison.prototype.copyStyle = function(oStyle)
@@ -1853,9 +1868,11 @@
             return this.StylesMap[oStyle.Id];
         }
         var oStyleCopy;
-        if(oStyleCopy = this.originalDocument.Styles.GetStyleIdByName(oStyle.Name, false))
+        var sStyleId = this.originalDocument.Styles.GetStyleIdByName(oStyle.Name, false);
+        if(oStyleCopy = this.originalDocument.Styles.Get(sStyleId))
         {
-            return oStyleCopy;
+            this.StylesMap[oStyle.Id] = sStyleId;
+            return sStyleId;
         }
         oStyleCopy = oStyle.Copy();
         oStyleCopy.Set_Name(oStyle.Name);
@@ -1866,51 +1883,33 @@
         oStyleCopy.Set_Hidden(oStyle.hidden);
         oStyleCopy.Set_SemiHidden(oStyle.semiHidden);
         oStyleCopy.Set_UnhideWhenUsed(oStyle.unhideWhenUsed);
-        oStyleCopy.Set_TextPr(oStyle.TextPr.Copy());
-        var oParaPrCopy = oStyle.ParaPr.Copy();
-
-        if(undefined !== oParaPrCopy.NumPr && undefined !== oParaPrCopy.NumPr.NumId)
-        {
-            var NewId = this.revisedDocument.CopyNumberingMap[oParaPrCopy.NumPr.NumId];
-            if (undefined !== NewId)
-                oParaPrCopy.SetNumPr(NewId, oParaPrCopy.NumPr.Lvl);
-        }
-
-        oStyleCopy.Set_ParaPr(oParaPrCopy);
+        oStyleCopy.Set_TextPr(oStyle.TextPr.Copy(undefined, this.copyPr));
+        oStyleCopy.Set_ParaPr( oStyle.ParaPr.Copy(undefined, this.copyPr));
         oStyleCopy.Set_TablePr(oStyle.TablePr.Copy());
         oStyleCopy.Set_TableRowPr(oStyle.TableRowPr.Copy());
         oStyleCopy.Set_TableCellPr(oStyle.TableCellPr.Copy());
         if (undefined !== oStyle.TableBand1Horz)
         {
-            oStyleCopy.Set_TableBand1Horz(this.copyTableStylePr(oStyle.TableBand1Horz));
-            oStyleCopy.Set_TableBand1Vert(this.copyTableStylePr(oStyle.TableBand1Vert));
-            oStyleCopy.Set_TableBand2Horz(this.copyTableStylePr(oStyle.TableBand2Horz));
-            oStyleCopy.Set_TableBand2Vert(this.copyTableStylePr(oStyle.TableBand2Vert));
-            oStyleCopy.Set_TableFirstCol(this.copyTableStylePr(oStyle.TableFirstCol));
-            oStyleCopy.Set_TableFirstRow(this.copyTableStylePr(oStyle.TableFirstRow));
-            oStyleCopy.Set_TableLastCol(this.copyTableStylePr(oStyle.TableLastCol));
-            oStyleCopy.Set_TableLastRow(this.copyTableStylePr(oStyle.TableLastRow));
-            oStyleCopy.Set_TableTLCell(this.copyTableStylePr(oStyle.TableTLCell));
-            oStyleCopy.Set_TableTRCell(this.copyTableStylePr(oStyle.TableTRCell));
-            oStyleCopy.Set_TableBLCell(this.copyTableStylePr(oStyle.TableBLCell));
-            oStyleCopy.Set_TableBRCell(this.copyTableStylePr(oStyle.TableBRCell));
-            oStyleCopy.Set_TableWholeTable(this.copyTableStylePr(oStyle.TableWholeTable));
+            oStyleCopy.Set_TableBand1Horz(oStyle.TableBand1Horz.Copy(this.copyPr));
+            oStyleCopy.Set_TableBand1Vert(oStyle.TableBand1Vert.Copy(this.copyPr));
+            oStyleCopy.Set_TableBand2Horz(oStyle.TableBand2Horz.Copy(this.copyPr));
+            oStyleCopy.Set_TableBand2Vert(oStyle.TableBand2Vert.Copy(this.copyPr));
+            oStyleCopy.Set_TableFirstCol(oStyle.TableFirstCol.Copy(this.copyPr));
+            oStyleCopy.Set_TableFirstRow(oStyle.TableFirstRow.Copy(this.copyPr));
+            oStyleCopy.Set_TableLastCol(oStyle.TableLastCol.Copy(this.copyPr));
+            oStyleCopy.Set_TableLastRow(oStyle.TableLastRow.Copy(this.copyPr));
+            oStyleCopy.Set_TableTLCell(oStyle.TableTLCell.Copy(this.copyPr));
+            oStyleCopy.Set_TableTRCell(oStyle.TableTRCell.Copy(this.copyPr));
+            oStyleCopy.Set_TableBLCell(oStyle.TableBLCell.Copy(this.copyPr));
+            oStyleCopy.Set_TableBRCell(oStyle.TableBRCell.Copy(this.copyPr));
+            oStyleCopy.Set_TableWholeTable(oStyle.TableWholeTable.Copy(this.copyPr));
         }
-
-
         if(oStyle.BasedOn)
         {
-            if(!this.StylesMap[oStyle.BasedOn])
-            {
-                oStyleCopy.Set_BasedOn(this.copyStyle(this.revisedDocument.Styles.Get(oStyle.BasedOn)));
-            }
-            else
-            {
-                oStyleCopy.Set_BasedOn(this.StylesMap[oStyle.BasedOn])
-            }
+            oStyleCopy.Set_BasedOn(this.copyStyle(this.revisedDocument.Styles.Get(oStyle.BasedOn)));
         }
         this.originalDocument.Styles.Add(oStyleCopy);
-        this.StylesMap[oStyleCopy.Id] = oStyleCopy.Id;
+        this.StylesMap[oStyle.Id] = oStyleCopy.Id;
         return oStyleCopy.Id;
     };
 
@@ -1924,79 +1923,8 @@
         return null;
     };
 
-    CDocumentComparison.prototype.replaceParagraphStyle = function(oParagraph)
-    {
-        var oStyle;
-        if(oParagraph.Pr && oParagraph.Pr.PStyle && (oStyle = this.revisedDocument.Styles.Get(oParagraph.Pr.PStyle)))
-        {
-            oParagraph.Style_Add(this.copyStyle(oStyle), true);
-        }
 
-        if (oParagraph.Pr.NumPr && oParagraph.Pr.NumPr.NumId)
-        {
-            if(this.matchedNums[oParagraph.Pr.NumPr.NumId])
-            {
-                oParagraph.SetNumPr(this.matchedNums[oParagraph.Pr.NumPr.NumId], oParagraph.Pr.NumPr.Lvl);
-            }
-            else if(this.matchedNums[this.reverseNumberingMap[oParagraph.Pr.NumPr.NumId]])
-            {
-                oParagraph.SetNumPr(this.matchedNums[this.reverseNumberingMap[oParagraph.Pr.NumPr.NumId]], oParagraph.Pr.NumPr.Lvl);
-            }
-            else
-            {
-                if(this.revisedDocument.CopyNumberingMap[oParagraph.Pr.NumPr.NumId])
-                {
-                    oParagraph.SetNumPr(this.revisedDocument.CopyNumberingMap[oParagraph.Pr.NumPr.NumId], oParagraph.Pr.NumPr.Lvl);
-                }
-            }
-        }
-    };
 
-    CDocumentComparison.prototype.replaceTableStyle = function(oTable)
-    {
-        var oStyle;
-        if(oTable.Pr && oTable.Pr.PStyle && (oStyle = this.revisedDocument.Styles.Get(oTable.TableStyle)))
-        {
-            oTable.Set_TableStyle(this.copyStyle(oStyle), false);
-        }
-    };
-
-    CDocumentComparison.prototype.replaceTableStyles = function(oTable)
-    {
-        for(var i = 0; i < oTable.Content.length; ++i)
-        {
-            var oRow = oTable.Content[i];
-            for(var j = 0; j < oRow.Content.length; ++j)
-            {
-                this.replaceDocContentStyles(oRow.Content[j].Content);
-            }
-        }
-        this.replaceTableStyle(oTable);
-    };
-
-    CDocumentComparison.prototype.replaceDocContentStyles = function(oContent)
-    {
-        for(var i = 0; i < oContent.Content.length; ++i)
-        {
-            this.replaceElementStyles(oContent.Content[i]);
-        }
-    };
-
-    CDocumentComparison.prototype.replaceElementStyles = function(oChildElement)
-    {
-        if(oChildElement instanceof Paragraph)
-        {
-            this.replaceParagraphStyle(oChildElement)
-        }
-        else if(oChildElement.Content instanceof CDocumentContent)
-        {
-            this.replaceDocContentStyles(oChildElement.Content);
-        }
-        else if(oChildElement instanceof CTable)
-        {
-            this.replaceTableStyles(oChildElement);
-        }
-    };
 
     CDocumentComparison.prototype.setElementReviewInfoRecursive = function(oChildElement)
     {
@@ -2038,7 +1966,6 @@
             }
             if(oChildElement)
             {
-                this.replaceElementStyles(oChildElement);
                 oElement.Internal_Content_Add(nIndex + k, oChildElement, false);
                 ++k;
             }
