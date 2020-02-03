@@ -1576,6 +1576,32 @@
                 oOrigSectPr.Set_Footer_Default(oReviseSectPr.FooterDefault.Copy(this.originalDocument, this.copyPr));
             }
 
+
+            if(oReviseSectPr)
+            {
+                var oReviseHeaderFirst = oReviseSectPr.HeaderFirst;
+                var oReviseHeaderEven = oReviseSectPr.HeaderEven;
+                var oReviseHeaderDefault = oReviseSectPr.HeaderDefault;
+                var oReviseFooterFirst = oReviseSectPr.FooterFirst;
+                var oReviseFooterEven = oReviseSectPr.FooterEven;
+                var oReviseFooterDefault = oReviseSectPr.FooterDefault;
+
+                oReviseSectPr.HeaderFirst = oOrigSectPr.HeaderFirst;
+                oReviseSectPr.HeaderEven = oOrigSectPr.HeaderEven;
+                oReviseSectPr.HeaderDefault = oOrigSectPr.HeaderDefault;
+                oReviseSectPr.FooterFirst = oOrigSectPr.FooterFirst;
+                oReviseSectPr.FooterEven = oOrigSectPr.FooterEven;
+                oReviseSectPr.FooterDefault = oOrigSectPr.FooterDefault;
+
+                oOrigSectPr.Copy(oReviseSectPr, false);
+
+                oReviseSectPr.HeaderFirst = oReviseHeaderFirst;
+                oReviseSectPr.HeaderEven = oReviseHeaderEven;
+                oReviseSectPr.HeaderDefault = oReviseHeaderDefault;
+                oReviseSectPr.FooterFirst = oReviseFooterFirst;
+                oReviseSectPr.FooterEven = oReviseFooterEven;
+                oReviseSectPr.FooterDefault = oReviseFooterDefault;
+            }
         }
     };
 
