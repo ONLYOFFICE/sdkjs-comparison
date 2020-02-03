@@ -2160,30 +2160,21 @@
         oApi.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.SlowOperation);
         var bHaveRevisons2 = false;
         var oDoc2 = AscFormat.ExecuteNoHistory(function(){
-            AscCommon.g_oIdCounter.m_bLoad = true;
+
             var oBinaryFileReader, openParams        = {checkFileSize : /*this.isMobileVersion*/false, charCount : 0, parCount : 0, disableRevisions: true};
-            AscCommon.g_oTableId.m_bTurnOff = false;
             var oDoc2 = new CDocument(oApi.WordControl.m_oDrawingDocument, true);
-            oDoc2.Footnotes = oDoc1.Footnotes;
             oApi.WordControl.m_oDrawingDocument.m_oLogicDocument = oDoc2;
-            oDoc2.ForceCopySectPr = true;
-
-            oBinaryFileReader = new AscCommonWord.BinaryFileReader(oDoc2, openParams);
-
             oApi.WordControl.m_oLogicDocument = oDoc2;
+            oBinaryFileReader = new AscCommonWord.BinaryFileReader(oDoc2, openParams);
             AscCommon.pptx_content_loader.Start_UseFullUrl(oApi.insertDocumentUrlsData);
-
             if (!oBinaryFileReader.Read(sBinary2))
             {
                 oDoc2 = null;
             }
             if(oDoc2)
             {
-                oDoc2.ForceCopySectPr = false;
                 bHaveRevisons2 = oBinaryFileReader.oReadResult && oBinaryFileReader.oReadResult.hasRevisions;
             }
-
-            AscCommon.g_oIdCounter.m_bLoad = false;
             oApi.WordControl.m_oDrawingDocument.m_oLogicDocument = oDoc1;
             oApi.WordControl.m_oLogicDocument = oDoc1;
             return oDoc2;
