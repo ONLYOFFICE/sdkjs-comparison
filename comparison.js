@@ -942,7 +942,7 @@
                 oOriginalDocument.End_SilentMode(false);
                 oOriginalDocument.Recalculate();
                 oOriginalDocument.UpdateInterface();
-                oOriginalDocument.FinalizeAction(AscDFH.historydescription_Document_CompareDocuments);
+                oOriginalDocument.FinalizeAction();
                 oApi.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.SlowOperation);
             });
 
