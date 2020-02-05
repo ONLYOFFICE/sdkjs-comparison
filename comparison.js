@@ -2146,6 +2146,10 @@
         return oRet;
     };
 
+    CDocumentComparison.prototype.createFootNote = function()
+    {
+        return this.originalDocument.Footnotes.CreateFootnote();
+    };
 
 
     window['AscCommonWord'] = window['AscCommonWord'] || {};
