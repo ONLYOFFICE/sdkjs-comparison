@@ -462,7 +462,7 @@
         this.api = oOriginalDocument.GetApi();
         this.StylesMap = {};
         this.matchedNums = {};
-        this.reverseNumberingMap = {};
+        this.checkedNums = {};
 
         this.copyPr = {
             CopyReviewPr: false,
@@ -914,16 +914,16 @@
             oRevisedDocument.FieldsManager = oOriginalDocument.FieldsManager;
             var NewNumbering = oRevisedDocument.Numbering.CopyAllNums(oOriginalDocument.Numbering);
             oRevisedDocument.CopyNumberingMap = NewNumbering.NumMap;
-
-            for(var key in NewNumbering.NumMap)
-            {
-                if(NewNumbering.NumMap.hasOwnProperty(key))
-                {
-                    oThis.reverseNumberingMap[NewNumbering.NumMap[key]] = key;
-                }
-            }
             oOriginalDocument.Numbering.AppendAbstractNums(NewNumbering.AbstractNum);
             oOriginalDocument.Numbering.AppendNums(NewNumbering.Num);
+            var key;
+            for(key in NewNumbering.NumMap)
+            {
+                if (NewNumbering.NumMap.hasOwnProperty(key))
+                {
+                    oThis.checkedNums[NewNumbering.NumMap[key]] = true;
+                }
+            }
             oThis.compareRoots(oOriginalDocument, oRevisedDocument);
             oThis.compareSectPr(oOriginalDocument, oRevisedDocument);
 
@@ -1342,120 +1342,19 @@
             var oPartnerElement = oPartnerNode.element;
             if(oPartnerElement instanceof Paragraph)
             {
-                var oOldPrChange = oPartnerElement.Pr.PrChange;
-                oPartnerElement.Pr.PrChange = oElement.Pr;
-                var oDiffPr = oPartnerElement.Pr.GetDiffPrChange(), oStyle;
-                oPartnerElement.Pr.PrChange = oOldPrChange;
-
-                if(undefined !== oDiffPr.ContextualSpacing)
-                {
-                    oElement.Set_ContextualSpacing(oDiffPr.ContextualSpacing);
-                }
-
-                if (oDiffPr.Ind)
-                {
-                    oElement.Set_Ind(oDiffPr.Ind, false);
-                }
-
-                if(undefined !== oDiffPr.Jc)
-                {
-                    oElement.Set_Align(oDiffPr.Jc);
-                }
-                if(undefined !== oDiffPr.KeepLines)
-                {
-                    oElement.Set_KeepLines(oDiffPr.KeepLines);
-                }
-                if(undefined !== oDiffPr.KeepNext)
-                {
-                    oElement.Set_KeepNext(oDiffPr.KeepNext);
-                }
-                if(undefined !== oDiffPr.PageBreakBefore)
-                {
-                    oElement.Set_PageBreakBefore(oDiffPr.PageBreakBefore);
-                }
-
-                if (oDiffPr.Spacing)
-                    oElement.Set_Spacing(oDiffPr.Spacing, false);
-
-                if (oDiffPr.Shd)
-                    oElement.Set_Shd(oDiffPr.Shd, true);
-
-//                        oElement.Set_WidowControl(oDiffPr.WidowControl);
-
-                if (oDiffPr.Tabs)
-                {
-                    if(!oElement.Pr.Tabs || !oDiffPr.Tabs.Is_Equal(oElement.Pr.Tabs))
-                    {
-                        oElement.Set_Tabs(oDiffPr.Tabs);
-                    }
-                }
-
-                if(oElement.Pr.NumPr && !oPartnerElement.Pr.NumPr)
-                {
-                    oElement.RemoveNumPr();
-                }
-                else
-                {
-                    if (oDiffPr.NumPr && this.revisedDocument.CopyNumberingMap[oDiffPr.NumPr.NumId])
-                    {
-                        if(oElement.Pr.NumPr && oPartnerElement.Pr.NumPr && oElement.Pr.NumPr.IsValid() && oPartnerElement.Pr.NumPr.IsValid())
-                        {
-                            if(oElement.Pr.NumPr.Lvl === oPartnerElement.Pr.NumPr.Lvl)
-                            {
-                                var oNumOrig = this.originalDocument.GetNumbering().GetNum(oElement.Pr.NumPr.NumId);
-                                var oNumRevise = this.revisedDocument.GetNumbering().GetNum(oPartnerElement.Pr.NumPr.NumId);
-                                if(oNumOrig && oNumRevise)
-                                {
-                                    if(!oNumOrig.IsSimilar(oNumRevise))
-                                    {
-                                        oElement.SetNumPr(this.revisedDocument.CopyNumberingMap[oDiffPr.NumPr.NumId], oDiffPr.NumPr.Lvl);
-                                    }
-                                }
-                                else if(oNumOrig)
-                                {
-                                    oElement.RemoveNumPr();
-                                }
-                                else if(oNumRevise)
-                                {
-                                    oElement.SetNumPr(this.revisedDocument.CopyNumberingMap[oDiffPr.NumPr.NumId], oDiffPr.NumPr.Lvl);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if(oElement.Pr.NumPr)
-                        {
-                            oElement.RemoveNumPr();
-                        }
-                    }
-                }
-                if (oDiffPr.PStyle)
-                {
-                    if(oStyle = this.revisedDocument.Styles.Get(oDiffPr.PStyle))
-                    {
-                        var oStyleId = this.copyStyle(oStyle);
-                        if(oStyleId !== oElement.Pr.PStyle)
-                        {
-                            oElement.Style_Add(oStyleId, true);
-                        }
-                    }
-                }
-                else
-                {
-                    if(oElement.Pr.PStyle && !oPartnerElement.Pr.PStyle)
-                    {
-                        oElement.Style_Add(undefined, true);
-                    }
-                }
-
-                if (oDiffPr.Brd)
-                    oElement.Set_Borders(oDiffPr.Brd);
 
 
-                if (oElement.Pr.NumPr && oElement.Pr.NumPr.NumId && oPartnerElement.Pr.NumPr && oPartnerElement.Pr.NumPr.NumId)
+                var oOldParaPr = oElement.Pr.Copy(undefined, undefined);
+                var oNewParaPr = oPartnerElement.Pr.Copy(undefined, this.copyPr);
+                oOldParaPr.PrChange = oNewParaPr;
+                var oDiffParaPr = oOldParaPr.GetDiffPrChange();
+                if(!oDiffParaPr.Is_Empty())
                 {
-                    this.matchedNums[oPartnerElement.Pr.NumPr.NumId] = oElement.Pr.NumPr.NumId;
+                    oOldParaPr.PrChange = undefined;
+                    oNewParaPr.PrChange = oDiffParaPr;
+                    oNewParaPr.ReviewInfo = new CReviewInfo();
+                    this.setReviewInfo(oNewParaPr.ReviewInfo);
+                    oElement.Set_Pr(oNewParaPr);
                 }
                 this.compareSectPr(oElement, oPartnerElement);
             }
@@ -1653,15 +1552,33 @@
         {
             NewId = this.matchedNums[sNumId];
         }
-        else if(this.matchedNums[this.reverseNumberingMap[sNumId]])
-        {
-            NewId = this.matchedNums[this.reverseNumberingMap[sNumId]];
-        }
         else
         {
             if(this.revisedDocument.CopyNumberingMap[sNumId])
             {
                 NewId = this.revisedDocument.CopyNumberingMap[sNumId];
+                var oCopyNum = AscCommon.g_oTableId.Get_ById(NewId);
+                var oOrigNumbering = this.originalDocument.Numbering.Num;
+                if(oCopyNum && oOrigNumbering)
+                {
+                    for(var keyOrig in oOrigNumbering)
+                    {
+                        if(oOrigNumbering.hasOwnProperty(keyOrig))
+                        {
+                            if(!this.checkedNums[keyOrig])
+                            {
+                                var oOrigNum = AscCommon.g_oTableId.Get_ById(keyOrig);
+                                if(oOrigNum && oOrigNum.IsSimilar(oCopyNum))
+                                {
+                                    this.matchedNums[sNumId] = keyOrig;
+                                    this.checkedNums[keyOrig] = true;
+                                    NewId = keyOrig;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         return NewId;
@@ -1694,10 +1611,13 @@
             oOldParaPr.PrChange = oNewParaPr;
             var oDiffParaPr = oOldParaPr.GetDiffPrChange();
             oOldParaPr.PrChange = undefined;
-            oNewParaPr.PrChange = oDiffParaPr;
-            oNewParaPr.ReviewInfo = new CReviewInfo();
-            this.setReviewInfo(oNewParaPr.ReviewInfo);
-            oStyleCopy.Set_ParaPr(oNewParaPr);
+            if(!oDiffParaPr.Is_Empty())
+            {
+                oNewParaPr.PrChange = oDiffParaPr;
+                oNewParaPr.ReviewInfo = new CReviewInfo();
+                this.setReviewInfo(oNewParaPr.ReviewInfo);
+                oStyleCopy.Set_ParaPr(oNewParaPr);
+            }
             return sStyleId;
         }
         oStyleCopy = oStyle.Copy();
