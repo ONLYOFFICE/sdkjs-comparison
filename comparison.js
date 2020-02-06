@@ -911,7 +911,6 @@
                     LogicDoc.AcceptRevisionChanges(undefined, true);
                 }
             }
-            oRevisedDocument.FieldsManager = oOriginalDocument.FieldsManager;
             var NewNumbering = oRevisedDocument.Numbering.CopyAllNums(oOriginalDocument.Numbering);
             oRevisedDocument.CopyNumberingMap = NewNumbering.NumMap;
             oOriginalDocument.Numbering.AppendAbstractNums(NewNumbering.AbstractNum);
@@ -1018,6 +1017,21 @@
             }
         }
 
+    };
+
+
+    CDocumentComparison.prototype.getNewParaPrWithDiff = function(oElementPr, oPartnerPr)
+    {
+        var oOldParaPr = oElementPr.Copy(undefined, undefined);
+        var oNewParaPr = oPartnerPr.Copy(undefined, this.copyPr);
+        if(oOldParaPr.Is_Equal(oNewParaPr))
+        {
+            return null;
+        }
+        oNewParaPr.PrChange = oOldParaPr;
+        oNewParaPr.ReviewInfo = new CReviewInfo();
+        this.setReviewInfo(oNewParaPr.ReviewInfo);
+        return oNewParaPr;
     };
 
     CDocumentComparison.prototype.applyChangesToParagraph = function(oNode)
@@ -1342,24 +1356,14 @@
             var oPartnerElement = oPartnerNode.element;
             if(oPartnerElement instanceof Paragraph)
             {
-
-
-                var oOldParaPr = oElement.Pr.Copy(undefined, undefined);
-                var oNewParaPr = oPartnerElement.Pr.Copy(undefined, this.copyPr);
-                oOldParaPr.PrChange = oNewParaPr;
-                var oDiffParaPr = oOldParaPr.GetDiffPrChange();
-                if(!oDiffParaPr.Is_Empty())
+                var oNewParaPr = this.getNewParaPrWithDiff(oElement.Pr, oPartnerElement.Pr);
+                if(oNewParaPr)
                 {
-                    oOldParaPr.PrChange = undefined;
-                    oNewParaPr.PrChange = oDiffParaPr;
-                    oNewParaPr.ReviewInfo = new CReviewInfo();
-                    this.setReviewInfo(oNewParaPr.ReviewInfo);
                     oElement.Set_Pr(oNewParaPr);
                 }
                 this.compareSectPr(oElement, oPartnerElement);
             }
         }
-
     };
 
     CDocumentComparison.prototype.compareSectPr = function(oElement, oPartnerElement)
@@ -1606,16 +1610,9 @@
         if(oStyleCopy = this.originalDocument.Styles.Get(sStyleId))
         {
             this.StylesMap[oStyle.Id] = sStyleId;
-            var oOldParaPr = oStyleCopy.ParaPr.Copy(undefined, undefined);
-            var oNewParaPr = oStyle.ParaPr.Copy(undefined, this.copyPr);
-            oOldParaPr.PrChange = oNewParaPr;
-            var oDiffParaPr = oOldParaPr.GetDiffPrChange();
-            oOldParaPr.PrChange = undefined;
-            if(!oDiffParaPr.Is_Empty())
+            var oNewParaPr = this.getNewParaPrWithDiff(oStyleCopy.ParaPr, oStyle.ParaPr);
+            if(oNewParaPr)
             {
-                oNewParaPr.PrChange = oDiffParaPr;
-                oNewParaPr.ReviewInfo = new CReviewInfo();
-                this.setReviewInfo(oNewParaPr.ReviewInfo);
                 oStyleCopy.Set_ParaPr(oNewParaPr);
             }
             return sStyleId;
