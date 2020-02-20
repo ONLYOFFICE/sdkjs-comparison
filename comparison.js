@@ -755,33 +755,8 @@
             }
         };
         var fEquals;
-
-        if(nCompareCount <= MAX_COMPARES)
-        {
-            oEqualMap = this.compareElementsArray(aBase, aCompare, bOrig, false);
-            bMatchNoEmpty = oEqualMap.bMatchNoEmpty;
-        }
-        else
-        {
-            if(bOrig)
-            {
-                oLCS = new LCS(aBase, aCompare);
-            }
-            else
-            {
-                oLCS = new LCS(aCompare, aBase);
-            }
-            fEquals = function (a, b) {
-
-                if(a.hashWords && b.hashWords && a.isComparable(b))
-                {
-                    return a.hashWords.jaccard(b.hashWords) >= MIN_JACCARD_RUDE;
-                }
-                return false;
-            };
-            oLCS.equals = fEquals;
-            oLCS.forEachCommonSymbol(fLCSCallback);
-        }
+        oEqualMap = this.compareElementsArray(aBase, aCompare, bOrig, false);
+        bMatchNoEmpty = oEqualMap.bMatchNoEmpty;
 
         //included paragraphs
         if(bMatchNoEmpty)
@@ -1730,7 +1705,7 @@
         {
             this.setReviewInfoRecursive(oObject.Root, nType);
         }
-        if(AscCommon.isRealObject(oObject.SectPr))
+        if(AscCommon.isRealObject(oObject.SectPr) && (oObject instanceof Paragraph))
         {
             var oOrigSectPr = oObject.SectPr, oOrigContent;
             if(oOrigSectPr)
