@@ -2,12 +2,17 @@
   "sdk": {
     "min": [
       "api.js"
-
     ],
     "common": [
       "delta.js",
       "minhash.js",
       "comparison.js"
-    ]
+    ],
+    "desktop": {
+      "min": [
+        "api_local.js"
+      ],
+      "common": []
+    }
   }
 }

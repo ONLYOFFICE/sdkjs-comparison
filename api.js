@@ -63,14 +63,14 @@
                 _api.insertDocumentUrlsData.imageMap = url;
                 if (!url['output.bin']) {
                     _api.endInsertDocumentUrls();
-                    _api.sendEvent("asc_onError", Asc.c_oAscError.ID.MailMergeLoadFile,
+                    _api.sendEvent("asc_onError", Asc.c_oAscError.ID.DirectUrl,
                         Asc.c_oAscError.Level.NoCritical);
                     return;
                 }
                 AscCommon.loadFileContent(url['output.bin'], function (httpRequest) {
                     if (null === httpRequest || !(stream = AscCommon.initStreamFromResponse(httpRequest))) {
                         _api.endInsertDocumentUrls();
-                        _api.sendEvent("asc_onError", Asc.c_oAscError.ID.MailMergeLoadFile,
+                        _api.sendEvent("asc_onError", Asc.c_oAscError.ID.DirectUrl,
                             Asc.c_oAscError.Level.NoCritical);
                         return;
                     }
