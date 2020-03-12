@@ -2003,7 +2003,15 @@
     {
 
         var oDoc1 = oApi.WordControl.m_oLogicDocument;
-
+        if(!window['NATIVE_EDITOR_ENJINE'])
+        {
+            var oCollaborativeEditing = oDoc1.CollaborativeEditing;
+            if(oCollaborativeEditing && !oCollaborativeEditing.Is_SingleUser())
+            {
+                oApi.sendEvent("asc_onError", Asc.c_oAscError.ID.CannotCompareInCoEditing, c_oAscError.Level.NoCritical);
+                return;
+            }
+        }
         oApi.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.SlowOperation);
         var bHaveRevisons2 = false;
         var oDoc2 = AscFormat.ExecuteNoHistory(function(){
