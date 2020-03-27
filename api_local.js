@@ -69,6 +69,6 @@
         file["GetBinary"] = function() { return AscCommon.getBinaryArray(file_content, file_content_len); };
         file["GetImageMap"] = function() { return image_map; };
 
-        AscCommonWord.CompareDocuments(api, file);
+        AscCommonWord["CompareDocuments"](api, file);
     };
 })(window, window.document);
