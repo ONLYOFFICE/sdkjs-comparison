@@ -39,10 +39,12 @@
         t.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Waiting);
         window["AscDesktopEditor"]["DownloadFiles"]([sUrl], [], function(files) {
             t.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Waiting);
-            if (Array.isArray(files) && files.length == 1)
-            {
-                return window["AscDesktopEditor"]["CompareDocumentUrl"](files[0], oOptions);
-            }
+			var _files= [];
+			for (var _elem in files) {
+				_files.push(files[_elem]);
+			}
+            if (_files.length == 1)
+                window["AscDesktopEditor"]["CompareDocumentUrl"](_files[0], oOptions);            
         });
     };
     window['Asc']['asc_docs_api'].prototype["asc_CompareDocumentFile"] = window['Asc']['asc_docs_api'].prototype.asc_CompareDocumentFile = function (oOptions) {
@@ -69,6 +71,6 @@
         file["GetBinary"] = function() { return AscCommon.getBinaryArray(file_content, file_content_len); };
         file["GetImageMap"] = function() { return image_map; };
 
-        AscCommonWord.CompareDocuments(api, file);
+        AscCommonWord["CompareDocuments"](api, file);
     };
 })(window, window.document);
