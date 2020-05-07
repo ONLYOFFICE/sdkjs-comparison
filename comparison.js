@@ -1994,6 +1994,11 @@
         return this.originalDocument.Footnotes.CreateFootnote();
     };
 
+    CDocumentComparison.prototype.createEndNote = function()
+    {
+        return this.originalDocument.Endnotes.CreateEndnote();
+    };
+
 
     window['AscCommonWord'] = window['AscCommonWord'] || {};
     window['AscCommonWord'].CDocumentComparison = CDocumentComparison;
