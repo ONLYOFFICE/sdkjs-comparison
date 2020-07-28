@@ -9,9 +9,7 @@
       "comparison.js"
     ],
     "desktop": {
-      "min": [
-        "api_local.js"
-      ],
+      "min": [],
       "common": []
     }
   }
