@@ -375,7 +375,8 @@
     CTextElement.prototype.compareFootnotes = function (oTextElement)
     {
         if(this.elements.length === 1 && oTextElement.elements.length === 1
-        && this.elements[0].Type === para_FootnoteReference && oTextElement.elements[0].Type === para_FootnoteReference)
+        && (this.elements[0].Type === para_FootnoteReference && oTextElement.elements[0].Type === para_FootnoteReference
+		 || this.elements[0].Type === para_EndnoteReference && oTextElement.elements[0].Type === para_EndnoteReference))
         {
             var oBaseContent = this.elements[0].Footnote;
             var oCompareContent = oTextElement.elements[0].Footnote;
@@ -1689,7 +1690,7 @@
         {
             this.setReviewInfoRecursive(oObject.Content, nType);
         }
-        if(oObject.Type === para_FootnoteReference)
+        if(oObject.Type === para_FootnoteReference || oObject.Type === para_EndnoteReference)
         {
             this.setReviewInfoRecursive(oObject.Footnote, nType);
         }
@@ -1857,6 +1858,7 @@
                             if(oRunElement.Type === para_Space || oRunElement.Type === para_Tab
                                 || oRunElement.Type === para_Separator || oRunElement.Type === para_NewLine
                                 || oRunElement.Type === para_FootnoteReference
+                                || oRunElement.Type === para_EndnoteReference
                                 || bPunctuation)
                             {
                                 if(oLastText.elements.length > 0)
