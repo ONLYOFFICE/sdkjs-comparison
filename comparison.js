@@ -872,7 +872,9 @@
         }
         var fCallback = function (data) {
             var oImageMap = {};
-            AscCommon.ResetNewUrls(data, oObjectsForDownload.aUrls, oObjectsForDownload.aBuilderImagesByUrl, oImageMap);
+			AscFormat.ExecuteNoHistory(function () {
+				AscCommon.ResetNewUrls(data, oObjectsForDownload.aUrls, oObjectsForDownload.aBuilderImagesByUrl, oImageMap);
+			}, oThis, []);
             oOriginalDocument.StopRecalculate();
             oOriginalDocument.StartAction(AscDFH.historydescription_Document_CompareDocuments);
             oOriginalDocument.Start_SilentMode();
