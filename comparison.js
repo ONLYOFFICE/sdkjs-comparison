@@ -1580,7 +1580,7 @@
             for(j = oChange.insert.length - 1; j > -1;  --j)
             {
                 oElement.Content.splice(oChange.anchor.index, 0, oChange.insert[j].element.Copy(oElement, this.copyPr));
-                History.Add(new CChangesTableAddRow(oElement, oChange.anchor.index, [oElement.Content[oChange.anchor.index]]));
+                AscCommon.History.Add(new CChangesTableAddRow(oElement, oChange.anchor.index, [oElement.Content[oChange.anchor.index]]));
             }
             oElement.Internal_ReIndexing(0);
             if (oElement.Content.length > 0 && oElement.Content[0].Get_CellsCount() > 0)
