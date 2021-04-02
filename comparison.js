@@ -764,14 +764,15 @@
         };
 
         var oBaseNode = new CNode(oBaseGroup, null);
+        var oChildNode;
         for(var nSp = 0; nSp < oBaseGroup.spTree.length; ++nSp)
         {
-            oBaseNode.addChildNode(new CNode(oBaseGroup.spTree[nSp], oBaseNode));
+            oChildNode = new CNode(oBaseGroup.spTree[nSp], oBaseNode);
         }
         var oCompareNode = new CNode(oCompareGroup, null);
         for(nSp = 0; nSp < oCompareGroup.spTree.length; ++nSp)
         {
-            oCompareNode.addChildNode(new CNode(oCompareGroup.spTree[nSp], oCompareNode));
+            oChildNode = new CNode(oCompareGroup.spTree[nSp], oCompareNode);
         }
         var oDiff  = new Diff(oBaseNode, oCompareNode);
         oDiff.equals = function(a, b)
@@ -803,8 +804,9 @@
             }
             for(var nInsert = oChange.insert.length - 1; nInsert > -1;  --nInsert)
             {
-                var oInsertSp = oChange.insert[nInsert].element.copy(this.copyPr);
+                var oInsertSp = oChange.insert[nInsert].element.copy({contentCopyPr: this.copyPr});
                 oBaseGroup.addToSpTree(oChange.anchor.index, oInsertSp);
+                oInsertSp.setGroup(oBaseGroup);
             }
         }
     };
