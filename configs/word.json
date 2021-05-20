@@ -4,7 +4,6 @@
       "api.js"
     ],
     "common": [
-      "delta.js",
       "minhash.js",
       "comparison.js"
     ],
