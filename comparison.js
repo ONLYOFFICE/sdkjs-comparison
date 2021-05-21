@@ -534,14 +534,14 @@
         var fLCSCallback = function(x, y) {
             var oOrigNode = oLCS.a[x];
             var oReviseNode = oLCS.b[y];
-            var oDiff  = new Diff(oOrigNode, oReviseNode);
+            var oDiff  = new AscCommon.Diff(oOrigNode, oReviseNode);
             oDiff.equals = function(a, b)
             {
                 return a.equals(b);
             };
             var oMatching = new CMatching();
             oDiff.matchTrees(oMatching);
-            var oDeltaCollector = new DeltaCollector(oMatching, oOrigNode, oReviseNode);
+            var oDeltaCollector = new AscCommon.DeltaCollector(oMatching, oOrigNode, oReviseNode);
             oDeltaCollector.forEachChange(function(oOperation){
                 oOperation.anchor.base.addChange(oOperation);
             });
@@ -713,11 +713,11 @@
         {
             if(bOrig)
             {
-                oLCS = new LCS(aBase2, aCompare2);
+                oLCS = new AscCommon.LCS(aBase2, aCompare2);
             }
             else
             {
-                oLCS = new LCS(aCompare2, aBase2);
+                oLCS = new AscCommon.LCS(aCompare2, aBase2);
             }
             oLCS.equals = fEquals;
             oLCS.forEachCommonSymbol(fLCSCallback);
@@ -758,7 +758,7 @@
     };
     CDocumentComparison.prototype.compareGroups = function(oBaseGroup, oCompareGroup)
     {
-        var oLCS = new LCS(oBaseGroup.spTree, oCompareGroup.spTree);
+        var oLCS = new AscCommon.LCS(oBaseGroup.spTree, oCompareGroup.spTree);
         oLCS.equals = function(a, b) {
             return a.isComparable(b);
         };
@@ -774,14 +774,14 @@
         {
             oChildNode = new CNode(oCompareGroup.spTree[nSp], oCompareNode);
         }
-        var oDiff  = new Diff(oBaseNode, oCompareNode);
+        var oDiff  = new AscCommon.Diff(oBaseNode, oCompareNode);
         oDiff.equals = function(a, b)
         {
             return a.isComparable(b);
         };
         var oMatching = new CMatching();
         oDiff.matchTrees(oMatching);
-        var oDeltaCollector = new DeltaCollector(oMatching, oBaseNode, oCompareNode);
+        var oDeltaCollector = new AscCommon.DeltaCollector(oMatching, oBaseNode, oCompareNode);
         oDeltaCollector.forEachChange(function(oOperation){
             oOperation.anchor.base.addChange(oOperation);
         });
@@ -1018,7 +1018,9 @@
         }
         var fCallback = function (data) {
             var oImageMap = {};
-            AscCommon.ResetNewUrls(data, oObjectsForDownload.aUrls, oObjectsForDownload.aBuilderImagesByUrl, oImageMap);
+			AscFormat.ExecuteNoHistory(function () {
+				AscCommon.ResetNewUrls(data, oObjectsForDownload.aUrls, oObjectsForDownload.aBuilderImagesByUrl, oImageMap);
+			}, oThis, []);
             oOriginalDocument.StopRecalculate();
             oOriginalDocument.StartAction(AscDFH.historydescription_Document_CompareDocuments);
             oOriginalDocument.Start_SilentMode();
