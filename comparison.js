@@ -500,6 +500,7 @@
         this.options = oOptions;
         this.api = oOriginalDocument.GetApi();
         this.StylesMap = {};
+        this.CommentsMap = {};
         this.matchedNums = {};
         this.checkedNums = {};
 
@@ -520,8 +521,6 @@
             return AscCommon.translateManager.getValue("Author");
         }
     };
-
-
     CDocumentComparison.prototype.compareElementsArray = function(aBase, aCompare, bOrig, bUseMinDiff)
     {
         var oMapEquals = {};
@@ -725,7 +724,6 @@
         oEqualMap.bMatchNoEmpty = bMatchNoEmpty;
         return oEqualMap;
     };
-
     CDocumentComparison.prototype.compareNotes = function(oMatching)
     {
         for(var key in oMatching.Footnotes)
@@ -849,7 +847,6 @@
             }
         }
     };
-
     CDocumentComparison.prototype.compareGraphicObject = function(oBaseGrObject, oCompareGrObject)
     {
         if(!oBaseGrObject || !oCompareGrObject)
@@ -875,7 +872,6 @@
             }
         }
     };
-
     CDocumentComparison.prototype.compareRoots = function(oRoot1, oRoot2)
     {
 
@@ -999,7 +995,6 @@
             this.insertNodesToDocContent(oOrigRoot.element, nRemoveCount, aInserContent);
         }
     };
-
     CDocumentComparison.prototype.compare = function()
     {
         var oOriginalDocument = this.originalDocument;
@@ -1073,9 +1068,6 @@
         AscCommon.sendImgUrls(oApi, oObjectsForDownload.aUrls, fCallback, null, true);
         return null;
     };
-
-
-
     CDocumentComparison.prototype.getNewParaPrWithDiff = function(oElementPr, oPartnerPr)
     {
         var oOldParaPr = oElementPr.Copy(undefined, undefined);
@@ -1089,7 +1081,14 @@
         this.setReviewInfo(oNewParaPr.ReviewInfo);
         return oNewParaPr;
     };
-
+    CDocumentComparison.prototype.isElementForAdd = function (oElement)
+    {
+        if(oElement.IsParaEndRun && oElement.IsParaEndRun())
+        {
+            return false;
+        }
+        return true;
+    };
     CDocumentComparison.prototype.applyChangesToParagraph = function(oNode)
     {
         var oElement = oNode.element, oChange, i, j, k, t, oChildElement,
@@ -1236,7 +1235,7 @@
                                     {
                                         for(t = aContentToInsert.length - 1; t > - 1; --t)
                                         {
-                                            if(!(aContentToInsert[t].IsParaEndRun && aContentToInsert[t].IsParaEndRun()))
+                                            if(this.isElementForAdd(aContentToInsert[t]))
                                             {
                                                 oElement.AddToContent(j + 1, aContentToInsert[t]);
                                             }
@@ -1270,7 +1269,7 @@
                                             oCurRun.Split2(k, oElement, j);
                                             for(t = aContentToInsert.length - 1; t > - 1; --t)
                                             {
-                                                if(!(aContentToInsert[t].IsParaEndRun && aContentToInsert[t].IsParaEndRun()))
+                                                if(this.isElementForAdd(aContentToInsert[t]))
                                                 {
                                                     oElement.AddToContent(j + 1, aContentToInsert[t]);
                                                 }
@@ -1382,7 +1381,7 @@
                 {
                     for(t = aContentToInsert.length - 1; t > - 1; --t)
                     {
-                        if(!(aContentToInsert[t].IsParaEndRun && aContentToInsert[t].IsParaEndRun()))
+                        if(this.isElementForAdd(aContentToInsert[t]))
                         {
                             oElement.AddToContent(nInsertPosition, aContentToInsert[t]);
                         }
@@ -1424,7 +1423,6 @@
             }
         }
     };
-
     CDocumentComparison.prototype.compareSectPr = function(oElement, oPartnerElement)
     {
         var oOrigSectPr = oElement.SectPr;
@@ -1566,7 +1564,6 @@
             }
         }
     };
-
     CDocumentComparison.prototype.applyChangesToTable = function(oNode)
     {
         var oElement = oNode.element, oChange, i, j, oRow;
@@ -1593,7 +1590,6 @@
             this.applyChangesToTableRow(oNode.children[i]);
         }
     };
-
     CDocumentComparison.prototype.applyChangesToTableRow = function(oNode)
     {
         //TODO: handle cell inserts and removes
@@ -1603,7 +1599,6 @@
             this.applyChangesToDocContent(oNode.children[i]);
         }
     };
-
     CDocumentComparison.prototype.getCopyNumId = function(sNumId)
     {
         var NewId = undefined;
@@ -1642,14 +1637,11 @@
         }
         return NewId;
     };
-
-
     CDocumentComparison.prototype.copyStyleById = function(sId)
     {
         return this.copyStyle(this.revisedDocument.Styles.Get(sId));
 
     };
-
     CDocumentComparison.prototype.copyStyle = function(oStyle)
     {
         if(!oStyle)
@@ -1710,8 +1702,29 @@
         this.StylesMap[oStyle.Id] = oStyleCopy.Id;
         return oStyleCopy.Id;
     };
-
-
+    CDocumentComparison.prototype.copyComment = function(sId)
+    {
+        if(this.CommentsMap[sId])
+        {
+            return this.CommentsMap[sId];
+        }
+        var oComment = this.revisedDocument.Comments.Get_ById(sId);
+        if(oComment)
+        {
+            var oOrigComments = this.originalDocument.Comments;
+            if(oOrigComments)
+            {
+                var oOldParent = oComment.Parent;
+                oComment.Parent = oOrigComments;
+                var oCopyComment = oComment.Copy();
+                this.CommentsMap[sId] = oCopyComment;
+                this.originalDocument.Comments.Add(oCopyComment);
+                this.api.sync_AddComment(oCopyComment.Id, oCopyComment.Data);
+                oComment.Parent = oOldParent;
+            }
+        }
+        return this.CommentsMap[sId] || null;
+    };
     CDocumentComparison.prototype.getRevisedStyle = function(sStyleId)
     {
         if(this.revisedDocument)
@@ -1720,7 +1733,6 @@
         }
         return null;
     };
-
     CDocumentComparison.prototype.insertNodesToDocContent = function(oElement, nIndex, aInsert)
     {
 
@@ -1746,7 +1758,6 @@
             }
         }
     };
-
     CDocumentComparison.prototype.applyChangesToChildNode = function(oChildNode)
     {
         var oChildElement = oChildNode.element;
@@ -1763,7 +1774,6 @@
             this.applyChangesToTable(oChildNode);
         }
     };
-
     CDocumentComparison.prototype.applyChangesToDocContent = function(oNode)
     {
 
@@ -1791,7 +1801,6 @@
             this.applyChangesToChildNode(oNode.children[i]);
         }
     };
-
     CDocumentComparison.prototype.setReviewInfo = function(oReviewIno)
     {
         oReviewIno.Editor   = this.api;
@@ -1813,7 +1822,6 @@
             oReviewIno.DateTime = "Unknown";
         }
     };
-
     CDocumentComparison.prototype.setReviewInfoRecursive = function(oObject, nType)
     {
         if(!oObject)
@@ -1894,7 +1902,6 @@
         }
 
     };
-
     CDocumentComparison.prototype.updateReviewInfo = function(oObject, nType, bParaEnd)
     {
         if(oObject.ReviewInfo && oObject.SetReviewTypeWithInfo)
@@ -1905,7 +1912,6 @@
 
         }
     };
-
     CDocumentComparison.prototype.createNodeFromDocContent = function(oElement, oParentNode, oHashWords)
     {
         var oRet = new CNode(oElement, oParentNode);
@@ -1974,7 +1980,6 @@
         }
         return oRet;
     };
-
     CDocumentComparison.prototype.createNodeFromRunContentElement = function(oElement, oParentNode, oHashWords)
     {
         var oRet = new CNode(oElement, oParentNode);
@@ -2138,15 +2143,23 @@
         }
         return oRet;
     };
-
     CDocumentComparison.prototype.createFootNote = function()
     {
         return this.originalDocument.Footnotes.CreateFootnote();
     };
-
     CDocumentComparison.prototype.createEndNote = function()
     {
         return this.originalDocument.Endnotes.CreateEndnote();
+    };
+    CDocumentComparison.prototype.getComment = function(sId)
+    {
+        var oComment = this.originalDocument.Comments.Get_ById(sId);
+        if(oComment)
+        {
+            return oComment;
+        }
+        oComment = this.revisedDocument.Comments.Get_ById(sId);
+        return oComment || null;
     };
 
 
@@ -2171,7 +2184,7 @@
         var bHaveRevisons2 = false;
         var oDoc2 = AscFormat.ExecuteNoHistory(function(){
 
-            var oBinaryFileReader, openParams        = {checkFileSize : /*this.isMobileVersion*/false, charCount : 0, parCount : 0, disableRevisions: true};
+            var oBinaryFileReader, openParams        = {checkFileSize : /*this.isMobileVersion*/false, charCount : 0, parCount : 0, disableRevisions: true, noSendComments: true};
             var oDoc2 = new CDocument(oApi.WordControl.m_oDrawingDocument, true);
             oApi.WordControl.m_oDrawingDocument.m_oLogicDocument = oDoc2;
             oApi.WordControl.m_oLogicDocument = oDoc2;
