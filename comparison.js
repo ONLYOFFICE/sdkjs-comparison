@@ -2200,6 +2200,10 @@
             }
             oApi.WordControl.m_oDrawingDocument.m_oLogicDocument = oDoc1;
             oApi.WordControl.m_oLogicDocument = oDoc1;
+			if (oDoc1.History)
+				oDoc1.History.Set_LogicDocument(oDoc1);
+			if (oDoc1.CollaborativeEditing)
+				oDoc1.CollaborativeEditing.m_oLogicDocument = oDoc1;
             return oDoc2;
         }, this, []);
         oDoc1.History.Document = oDoc1;
