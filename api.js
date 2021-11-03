@@ -91,7 +91,7 @@
 
         var options = new Asc.asc_CDownloadOptions(Asc.c_oAscFileType.CANVAS_WORD);
         options.isNaturalDownload = true;
-        this.asc_DownloadAs(options);
+        this.downloadAs(Asc.c_oAscAsyncAction.DownloadAs, options);
     };
 
     // local versions
